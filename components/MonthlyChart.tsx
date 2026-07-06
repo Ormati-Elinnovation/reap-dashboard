@@ -16,20 +16,24 @@ export default function MonthlyChart({
   const vals = months.map((m) => totals[m] || 0);
   const max = Math.max(1, ...vals);
   const n = months.length;
-  let trend: { pct: number; up: boolean } | null = null;
+  let trend: { pct: number; dir: "up" | "down" | "flat" } | null = null;
   if (n >= 2 && vals[n - 2] > 0) {
     const a = vals[n - 2];
     const b = vals[n - 1];
-    trend = { pct: ((b - a) / a) * 100, up: b >= a };
+    const diff = b - a;
+    trend = { pct: ((b - a) / a) * 100, dir: diff > 0 ? "up" : diff < 0 ? "down" : "flat" };
   }
+  const trendColor = trend?.dir === "up" ? "var(--exp)" : trend?.dir === "down" ? "#3fb950" : "var(--muted)";
+  const trendArrow = trend?.dir === "up" ? "▲" : trend?.dir === "down" ? "▼" : "▬";
+  const trendWord = trend?.dir === "up" ? "עלייה" : trend?.dir === "down" ? "ירידה" : "ללא שינוי";
 
   return (
     <div className="card" style={{ marginBottom: 8 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div className="lbl">{title}</div>
         {trend && (
-          <div style={{ fontSize: 12, fontWeight: 700, color: trend.up ? "var(--exp)" : "#3fb950" }}>
-            {trend.up ? "▲" : "▼"} {Math.abs(trend.pct).toFixed(0)}% מהחודש הקודם
+          <div style={{ fontSize: 12, fontWeight: 700, color: trendColor }}>
+            {trendArrow} {Math.abs(trend.pct).toFixed(0)}% {trendWord} מהחודש הקודם
           </div>
         )}
       </div>
