@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# project data (financial)
+data/*.json
+_data_backup/
+reap-dashboard-src/
