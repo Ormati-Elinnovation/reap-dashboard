@@ -4,7 +4,14 @@ import { useTx } from "@/components/TransactionsProvider";
 import { createClient } from "@/lib/supabase/client";
 import { COMPANY_ORDER } from "@/lib/types";
 import { fmt } from "@/lib/format";
-import { createLogin } from "@/app/(dashboard)/admin/actions";
+import { createLogin, resetPassword } from "@/app/(dashboard)/admin/actions";
+
+function genPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const arr = new Uint32Array(12);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (x) => chars[x % chars.length]).join("");
+}
 
 type UserAccess = {
   email: string;
@@ -42,7 +49,12 @@ export default function AdminClient({ currentEmail }: { currentEmail: string }) 
   const [allCo, setAllCo] = useState(false);
   const [companies, setCompanies] = useState<Set<string>>(new Set());
   const [denied, setDenied] = useState<Set<string>>(new Set());
-  const [pw, setPw] = useState("");
+  const [genPw, setGenPw] = useState("");
+
+  useEffect(() => {
+    if (!genPw) setGenPw(genPassword());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function loadRows() {
     const { data } = await supabase.from("user_access").select("*").order("email");
@@ -60,7 +72,7 @@ export default function AdminClient({ currentEmail }: { currentEmail: string }) 
     setAllCo(u.all_companies);
     setCompanies(new Set(u.companies ?? []));
     setDenied(new Set(u.denied_cards ?? []));
-    setPw("");
+    setGenPw(genPassword());
     setStatus("");
   }
   function newUser() {
@@ -70,7 +82,7 @@ export default function AdminClient({ currentEmail }: { currentEmail: string }) 
     setAllCo(false);
     setCompanies(new Set());
     setDenied(new Set());
-    setPw("");
+    setGenPw(genPassword());
     setStatus("");
   }
   function toggle(set: Set<string>, v: string, upd: (s: Set<string>) => void) {
@@ -116,9 +128,22 @@ export default function AdminClient({ currentEmail }: { currentEmail: string }) 
     loadRows();
   }
   async function makeLogin() {
-    const res = await createLogin(email.toLowerCase().trim(), pw);
-    setStatus(res.error ? "שגיאה: " + res.error : "משתמש התחברות נוצר ✓");
-    if (res.ok) setPw("");
+    const res = await createLogin(email.toLowerCase().trim(), genPw);
+    setStatus(res.error ? "שגיאה: " + res.error : "התחברות נוצרה ✓ — לחץ 📋 העתק ושלח למשתמש");
+  }
+  async function doReset() {
+    const res = await resetPassword(email.toLowerCase().trim(), genPw);
+    setStatus(res.error ? "שגיאה: " + res.error : "הסיסמה אופסה ✓ — לחץ 📋 העתק ושלח למשתמש");
+  }
+  async function copyCreds() {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const text = `כתובת: ${origin}\nמייל: ${email.toLowerCase().trim()}\nסיסמה: ${genPw}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus("הפרטים הועתקו ✓");
+    } catch {
+      setStatus("העתקה נכשלה — העתק ידנית: " + text);
+    }
   }
 
   return (
@@ -256,20 +281,34 @@ export default function AdminClient({ currentEmail }: { currentEmail: string }) 
           </div>
 
           <div style={{ borderTop: "1px solid var(--line)", marginTop: 14, paddingTop: 12 }}>
-            <div className="lbl">יצירת התחברות (אם למשתמש עדיין אין חשבון)</div>
+            <div className="lbl">פרטי התחברות <span className="muted">— סיסמה אקראית נוצרת אוטומטית</span></div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 6 }}>
+              <span className="muted">סיסמה:</span>
               <input
                 className="search"
-                type="text"
-                placeholder="סיסמה ראשונית"
-                value={pw}
-                onChange={(e) => setPw(e.target.value)}
-                style={{ minWidth: 180 }}
+                readOnly
+                value={genPw}
+                style={{ minWidth: 160, fontFamily: "monospace", letterSpacing: 1 }}
               />
-              <button className="btn" onClick={makeLogin} disabled={!email || !pw}>
-                ➕ צור התחברות ל-{email || "…"}
+              <button className="mini" onClick={() => setGenPw(genPassword())} title="צור סיסמה אקראית חדשה">
+                🎲 חדשה
+              </button>
+              {isNew ? (
+                <button className="btn" onClick={makeLogin} disabled={!email || !genPw}>
+                  ➕ צור התחברות
+                </button>
+              ) : (
+                <button className="btn" onClick={doReset} disabled={!email || !genPw}>
+                  🔑 אפס סיסמה
+                </button>
+              )}
+              <button className="btn primary" onClick={copyCreds} disabled={!email || !genPw}>
+                📋 העתק כתובת + מייל + סיסמה
               </button>
             </div>
+            <p className="muted" style={{ fontSize: 11, marginTop: 6 }}>
+              זרימה: הזן מייל → צור התחברות → 📋 העתק ושלח למשתמש. המשתמש יוכל להחליף סיסמה בעצמו בעמוד &quot;החלף סיסמה&quot;.
+            </p>
           </div>
         </div>
       </div>

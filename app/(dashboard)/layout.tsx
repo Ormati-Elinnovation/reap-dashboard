@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllTransactions, fetchTechMap } from "@/lib/data";
@@ -37,6 +38,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <h1>Reap — הוצאות</h1>
       <div style={{ display: "flex", gap: 8 }}>
         <RefreshButton />
+        <Link href="/account" className="btn">🔑 סיסמה</Link>
         <ThemeToggle />
         <SignOutButton />
       </div>
