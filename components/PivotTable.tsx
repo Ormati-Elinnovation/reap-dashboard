@@ -31,6 +31,8 @@ export default function PivotTable({
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [sortK, setSortK] = useState<string>("tot");
   const [sortDir, setSortDir] = useState<number>(-1);
+  const [showAll, setShowAll] = useState(false);
+  const PAGE = 120;
 
   const div = nMon || 1;
   function val(g: PivotGroup, k: string): number | string {
@@ -82,8 +84,14 @@ export default function PivotTable({
         <button className="btn" onClick={() => setOpen(new Set())}>
           סגור הכל
         </button>
+        {sorted.length > PAGE && (
+          <button className="btn" onClick={() => setShowAll((v) => !v)}>
+            {showAll ? `הצג ${PAGE} ראשונים` : `הצג הכל (${sorted.length})`}
+          </button>
+        )}
         <span className="muted">
           {included.length} · ${fmt(footTot)}
+          {!showAll && sorted.length > PAGE ? ` · מוצגים ${PAGE} ראשונים` : ""}
         </span>
       </div>
       <div className="tablewrap" style={{ maxHeight: "56vh" }}>
@@ -113,7 +121,7 @@ export default function PivotTable({
             </tr>
           </thead>
           <tbody>
-            {sorted.map((g) => {
+            {(showAll ? sorted : sorted.slice(0, PAGE)).map((g) => {
               const isOff = exclude?.off.has(g.key) ?? false;
               const isOpen = open.has(g.key);
               return (

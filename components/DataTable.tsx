@@ -6,22 +6,23 @@ import { exportRows } from "@/lib/xlsx";
 
 type Row = Record<string, unknown> & { amt: number };
 
+const PAGE = 200; // rows rendered to the DOM at once (perf); export/footer use all filtered rows
+
 export default function DataTable<T extends Row>({
   rows,
   cols,
   exportName,
-  cap,
   onFilter,
 }: {
   rows: T[];
   cols: Column[];
   exportName: string;
-  cap?: number;
   onFilter?: (rows: T[]) => void;
 }) {
   const [f, setF] = useState<FilterState>(emptyFilters());
   const [sortK, setSortK] = useState<string>("date");
   const [sortDir, setSortDir] = useState<number>(-1);
+  const [showAll, setShowAll] = useState(false);
 
   const options = useMemo(() => {
     const o: Record<string, string[]> = {};
@@ -34,7 +35,7 @@ export default function DataTable<T extends Row>({
     [rows, cols, f, sortK, sortDir]
   );
   const sum = useMemo(() => filtered.reduce((s, r) => s + r.amt, 0), [filtered]);
-  const shown = cap ? filtered.slice(0, cap) : filtered;
+  const shown = showAll ? filtered : filtered.slice(0, PAGE);
 
   useEffect(() => {
     onFilter?.(filtered);
@@ -75,9 +76,14 @@ export default function DataTable<T extends Row>({
         <button className="btn primary" onClick={doExport}>
           ⬇️ ייצוא לאקסל
         </button>
+        {filtered.length > PAGE && (
+          <button className="btn" onClick={() => setShowAll((v) => !v)}>
+            {showAll ? `הצג ${PAGE} ראשונות` : `הצג הכל (${filtered.length})`}
+          </button>
+        )}
         <span className="muted">
           {filtered.length} מתוך {rows.length} · ${fmt(sum)}
-          {cap && filtered.length > cap ? ` · מוצגות ${cap} ראשונות` : ""}
+          {!showAll && filtered.length > PAGE ? ` · מוצגות ${PAGE} ראשונות` : ""}
         </span>
       </div>
       <div className="tablewrap" style={{ maxHeight: "60vh" }}>

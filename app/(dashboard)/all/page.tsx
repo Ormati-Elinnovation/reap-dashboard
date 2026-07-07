@@ -72,7 +72,7 @@ export default function AllPage() {
         )}
       />
       <h3>כל העסקאות</h3>
-      <DataTable rows={tx} cols={COLS} exportName="all_expenses" cap={4000} onFilter={setFiltered} />
+      <DataTable rows={tx} cols={COLS} exportName="all_expenses" onFilter={setFiltered} />
     </>
   );
 }

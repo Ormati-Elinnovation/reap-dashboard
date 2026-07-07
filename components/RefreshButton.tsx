@@ -1,14 +1,12 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { triggerReload } from "@/lib/dataStore";
 
 export default function RefreshButton() {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   function refresh() {
     setBusy(true);
-    router.refresh();
-    // router.refresh re-runs the server layout (force-dynamic) → fresh Supabase fetch
+    triggerReload();
     setTimeout(() => setBusy(false), 800);
   }
   return (

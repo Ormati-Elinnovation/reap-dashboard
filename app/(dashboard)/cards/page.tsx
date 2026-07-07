@@ -118,7 +118,7 @@ export default function CardsPage() {
             </tr>
           </thead>
           <tbody>
-            {bym.map(([mch, o]) => {
+            {bym.slice(0, 150).map(([mch, o]) => {
               const off = offSup.has(mch);
               return (
                 <tr key={mch} className={"srow" + (off ? " off" : "")} onClick={() => toggleSup(mch)}>
