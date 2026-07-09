@@ -8,7 +8,7 @@ export async function fetchAllTransactions(supabase: SupabaseClient): Promise<Tr
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase
       .from("transactions")
-      .select("date,month,ts,tid,company,card,holder,merchant,cat,amt,status,srv_group,tech_supplier,tech_group")
+      .select("id,date,month,ts,tid,company,card,holder,merchant,cat,amt,status,srv_group,tech_supplier,tech_group,department,manual")
       .order("date", { ascending: true })
       .range(from, from + PAGE - 1);
     if (error) throw error;

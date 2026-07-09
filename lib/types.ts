@@ -14,7 +14,11 @@ export type Transaction = {
   srv_group?: string | null; // AWS | AUTOMAT | MongoDB | null
   tech_supplier?: string | null;
   tech_group?: string | null;
+  department?: string | null;
+  manual?: boolean;
 };
+
+export const DEPARTMENTS = ["טכנולוגיה", "פייננס", "אופרציה", "מרקטינג", "משפטי"] as const;
 
 export type TechMap = Record<string, [string, string]>; // merchant -> [supplier, group]
 

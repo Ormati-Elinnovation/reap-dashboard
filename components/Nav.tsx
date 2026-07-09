@@ -79,10 +79,15 @@ export default function Nav({ isAdmin = false }: { isAdmin?: boolean }) {
 
       {isAdmin && (
         <Link
-          href="/admin"
-          className={isActive("/admin") ? "active" : ""}
+          href="/manual"
+          className={isActive("/manual") ? "active" : ""}
           style={{ marginInlineStart: "auto" }}
         >
+          🖊️ ידני
+        </Link>
+      )}
+      {isAdmin && (
+        <Link href="/admin" className={isActive("/admin") ? "active" : ""}>
           🔐 ניהול הרשאות
         </Link>
       )}
