@@ -34,7 +34,7 @@ export default function ManualClient() {
     [tx]
   );
   const manualRows = useMemo(
-    () => tx.filter((r) => r.manual).sort((a, b) => (a.date < b.date ? 1 : -1)),
+    () => tx.filter((r) => r.manual).sort((a, b) => (b.id ?? 0) - (a.id ?? 0)),
     [tx]
   );
 

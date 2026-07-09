@@ -35,10 +35,8 @@ export function TransactionsProvider({ isAdmin, children }: { isAdmin: boolean; 
 
   useEffect(() => {
     if (!data) fetchNow();
-    return onReload(() => {
-      setData(null);
-      fetchNow();
-    });
+    // On manual refresh: refetch in place (keep current data visible, no blank flash).
+    return onReload(() => fetchNow());
   }, [data, fetchNow]);
 
   const value = useMemo<Ctx | null>(
