@@ -24,6 +24,26 @@ function svc(): SupabaseClient {
   });
 }
 
+// Technology classification for a manual row: merchant-based first; if unmatched but the
+// department is "טכנולוגיה", still route it into the Technology tab (group "ידני").
+function techFor(
+  merchant: string,
+  department: string,
+  techMap: TechMap
+): { supplier: string; group: string } | null {
+  const t = classifyTech(merchant, techMap);
+  if (t) return t;
+  if (department === "טכנולוגיה") return { supplier: merchant, group: "ידני" };
+  return null;
+}
+
+async function loadTechMap(client: SupabaseClient): Promise<TechMap> {
+  const { data } = await client.from("tech_map").select("merchant,supplier,group");
+  const m: TechMap = {};
+  for (const r of data ?? []) m[r.merchant as string] = [r.supplier as string, r.group as string];
+  return m;
+}
+
 export type ManualInput = {
   date: string;
   company: string;
@@ -41,10 +61,8 @@ export async function addManual(input: ManualInput): Promise<{ ok?: boolean; err
     return { error: "חסרים שדות חובה (תאריך, חברה, ספק, סכום)" };
 
   const client = svc();
-  const { data: tm } = await client.from("tech_map").select("merchant,supplier,group");
-  const techMap: TechMap = {};
-  for (const r of tm ?? []) techMap[r.merchant as string] = [r.supplier as string, r.group as string];
-  const tech = classifyTech(merchant.trim(), techMap);
+  const techMap = await loadTechMap(client);
+  const tech = techFor(merchant.trim(), department, techMap);
 
   const row = {
     date,
@@ -80,10 +98,8 @@ export async function updateManual(
     return { error: "חסרים שדות חובה (תאריך, חברה, ספק, סכום)" };
 
   const client = svc();
-  const { data: tm } = await client.from("tech_map").select("merchant,supplier,group");
-  const techMap: TechMap = {};
-  for (const r of tm ?? []) techMap[r.merchant as string] = [r.supplier as string, r.group as string];
-  const tech = classifyTech(merchant.trim(), techMap);
+  const techMap = await loadTechMap(client);
+  const tech = techFor(merchant.trim(), department, techMap);
 
   const { error } = await client
     .from("transactions")
