@@ -69,6 +69,43 @@ export async function addManual(input: ManualInput): Promise<{ ok?: boolean; err
   return { ok: true };
 }
 
+export async function updateManual(
+  id: number,
+  input: ManualInput
+): Promise<{ ok?: boolean; error?: string }> {
+  if (!(await requireAdmin())) return { error: "אין הרשאה" };
+  const { date, company, merchant, cat, department } = input;
+  const amt = Number(input.amt);
+  if (!date || !company || !merchant.trim() || !isFinite(amt) || amt === 0)
+    return { error: "חסרים שדות חובה (תאריך, חברה, ספק, סכום)" };
+
+  const client = svc();
+  const { data: tm } = await client.from("tech_map").select("merchant,supplier,group");
+  const techMap: TechMap = {};
+  for (const r of tm ?? []) techMap[r.merchant as string] = [r.supplier as string, r.group as string];
+  const tech = classifyTech(merchant.trim(), techMap);
+
+  const { error } = await client
+    .from("transactions")
+    .update({
+      date,
+      month: date.slice(0, 7),
+      ts: date,
+      company,
+      merchant: merchant.trim(),
+      cat: cat || null,
+      amt: Math.round(amt * 100) / 100,
+      srv_group: classifyServer(merchant.trim()),
+      tech_supplier: tech?.supplier ?? null,
+      tech_group: tech?.group ?? null,
+      department: department || null,
+    })
+    .eq("id", id)
+    .eq("manual", true);
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
 export async function deleteManual(id: number): Promise<{ ok?: boolean; error?: string }> {
   if (!(await requireAdmin())) return { error: "אין הרשאה" };
   const { error } = await svc().from("transactions").delete().eq("id", id).eq("manual", true);

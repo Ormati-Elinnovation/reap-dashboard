@@ -56,38 +56,36 @@ export default function Nav({ isAdmin = false }: { isAdmin?: boolean }) {
         {HOME[1]}
       </Link>
 
-      {order.map((href, i) =>
-        edit ? (
-          <a
-            key={href}
-            className={isActive(href) ? "active" : ""}
-            style={{ cursor: "grab", opacity: drag === i ? 0.5 : 1 }}
-            draggable
-            onDragStart={() => setDrag(i)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={() => drop(i)}
-            onDragEnd={() => setDrag(null)}
-          >
-            ⠿ {LABELS[href]}
-          </a>
-        ) : (
-          <Link key={href} href={href} className={isActive(href) ? "active" : ""}>
-            {LABELS[href]}
-          </Link>
-        )
-      )}
+      {order.map((href, i) => (
+        <span key={href} style={{ display: "contents" }}>
+          {edit ? (
+            <a
+              className={isActive(href) ? "active" : ""}
+              style={{ cursor: "grab", opacity: drag === i ? 0.5 : 1 }}
+              draggable
+              onDragStart={() => setDrag(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => drop(i)}
+              onDragEnd={() => setDrag(null)}
+            >
+              ⠿ {LABELS[href]}
+            </a>
+          ) : (
+            <Link href={href} className={isActive(href) ? "active" : ""}>
+              {LABELS[href]}
+            </Link>
+          )}
+          {/* Manual tab pinned right after Suppliers */}
+          {href === "/suppliers" && isAdmin && !edit && (
+            <Link href="/manual" className={isActive("/manual") ? "active" : ""}>
+              🖊️ ידני
+            </Link>
+          )}
+        </span>
+      ))}
 
       {isAdmin && (
-        <Link
-          href="/manual"
-          className={isActive("/manual") ? "active" : ""}
-          style={{ marginInlineStart: "auto" }}
-        >
-          🖊️ ידני
-        </Link>
-      )}
-      {isAdmin && (
-        <Link href="/admin" className={isActive("/admin") ? "active" : ""}>
+        <Link href="/admin" className={isActive("/admin") ? "active" : ""} style={{ marginInlineStart: "auto" }}>
           🔐 ניהול הרשאות
         </Link>
       )}

@@ -5,7 +5,8 @@ import { COMPANY_ORDER, DEPARTMENTS } from "@/lib/types";
 import { fmt } from "@/lib/format";
 import { monthLabel } from "@/lib/months";
 import { triggerReload } from "@/lib/dataStore";
-import { addManual, deleteManual, type ManualInput } from "@/app/(dashboard)/manual/actions";
+import { addManual, updateManual, deleteManual, type ManualInput } from "@/app/(dashboard)/manual/actions";
+import type { Transaction } from "@/lib/types";
 
 const inputStyle: React.CSSProperties = {
   background: "var(--bg)",
@@ -45,15 +46,35 @@ export default function ManualClient() {
   const [amt, setAmt] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  async function add() {
+  function loadRow(r: Transaction, asEdit: boolean) {
+    setDate(r.date);
+    setCompany(r.company);
+    setMerchant(r.merchant);
+    setCat(r.cat ?? "");
+    setDepartment(r.department || DEPARTMENTS[0]);
+    setAmt(String(r.amt));
+    setEditingId(asEdit ? r.id ?? null : null);
+    setMsg(asEdit ? "עריכת שורה — עדכן ושמור" : "שכפול — התאם ולחץ הוסף");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function resetForm() {
+    setEditingId(null);
+    setMerchant("");
+    setAmt("");
+    setMsg("");
+  }
+
+  async function submit() {
     setBusy(true);
     setMsg("");
     const input: ManualInput = { date, company, merchant, cat, department, amt: Number(amt) };
-    const res = await addManual(input);
+    const res = editingId ? await updateManual(editingId, input) : await addManual(input);
     setBusy(false);
     if (res.error) return setMsg("שגיאה: " + res.error);
-    setMsg("נוסף ✓");
+    setMsg(editingId ? "עודכן ✓" : "נוסף ✓");
+    setEditingId(null);
     setMerchant("");
     setAmt("");
     triggerReload(); // refresh cached data → appears in all tabs
@@ -141,10 +162,15 @@ export default function ManualClient() {
                   style={{ ...inputStyle, width: 100 }}
                 />
               </td>
-              <td>
-                <button className="btn primary" onClick={add} disabled={busy}>
-                  {busy ? "…" : "➕ הוסף"}
+              <td style={{ whiteSpace: "nowrap" }}>
+                <button className="btn primary" onClick={submit} disabled={busy}>
+                  {busy ? "…" : editingId ? "💾 עדכן" : "➕ הוסף"}
                 </button>
+                {editingId && (
+                  <button className="mini" style={{ marginRight: 6 }} onClick={resetForm}>
+                    בטל
+                  </button>
+                )}
               </td>
             </tr>
           </tbody>
@@ -178,8 +204,10 @@ export default function ManualClient() {
                 <td>{r.department}</td>
                 <td>{monthLabel(r.month)}</td>
                 <td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(r.amt)}</td>
-                <td>
-                  <button className="mini" onClick={() => remove(r.id)}>🗑️</button>
+                <td style={{ whiteSpace: "nowrap" }}>
+                  <button className="mini" title="ערוך" onClick={() => loadRow(r, true)}>✏️</button>
+                  <button className="mini" title="שכפל" style={{ marginRight: 4 }} onClick={() => loadRow(r, false)}>⧉</button>
+                  <button className="mini" title="מחק" style={{ marginRight: 4 }} onClick={() => remove(r.id)}>🗑️</button>
                 </td>
               </tr>
             ))}
