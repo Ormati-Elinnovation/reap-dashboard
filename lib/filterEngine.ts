@@ -3,7 +3,7 @@ export type Column = { k: string; t: string; type?: ColType };
 
 export type FilterState = {
   q: string;
-  sel: Record<string, string>;
+  sel: Record<string, string[]>; // multi-select: chosen values per column (empty/absent = no filter)
   txt: Record<string, string>;
   num: Record<string, { min?: number; max?: number }>;
 };
@@ -23,7 +23,10 @@ export function applyFilters<T extends Record<string, unknown>>(
   const q = f.q.toLowerCase().trim();
   const out = rows.filter((r) => {
     if (q && !cols.some((c) => String(r[c.k] ?? "").toLowerCase().includes(q))) return false;
-    for (const k in f.sel) if (String(r[k] ?? "") !== f.sel[k]) return false;
+    for (const k in f.sel) {
+      const vals = f.sel[k];
+      if (vals && vals.length && !vals.includes(String(r[k] ?? ""))) return false;
+    }
     for (const k in f.txt) if (!String(r[k] ?? "").toLowerCase().includes(f.txt[k])) return false;
     for (const k in f.num) {
       const v = r[k] as number;

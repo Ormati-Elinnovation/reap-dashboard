@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { applyFilters, emptyFilters, optionsFor, type Column, type FilterState } from "@/lib/filterEngine";
 import { fmt } from "@/lib/format";
 import { exportRows } from "@/lib/xlsx";
+import MultiSelect from "@/components/MultiSelect";
 
 type Row = Record<string, unknown> & { amt: number };
 
@@ -101,17 +102,11 @@ export default function DataTable<T extends Row>({
               {cols.map((c) => (
                 <th key={c.k}>
                   {c.type === "select" ? (
-                    <select
-                      value={f.sel[c.k] ?? ""}
-                      onChange={(e) => setF({ ...f, sel: { ...f.sel, [c.k]: e.target.value } })}
-                    >
-                      <option value="">הכל</option>
-                      {options[c.k]?.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                    </select>
+                    <MultiSelect
+                      options={options[c.k] ?? []}
+                      selected={f.sel[c.k] ?? []}
+                      onChange={(vals) => setF({ ...f, sel: { ...f.sel, [c.k]: vals } })}
+                    />
                   ) : c.type === "num" ? (
                     <div style={{ display: "flex", gap: 4 }}>
                       <input
