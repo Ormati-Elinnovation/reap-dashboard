@@ -3,7 +3,7 @@
 API לקריאה בלבד (read-only) לנתוני דשבורד ההוצאות. מיועד לחיבור מערכות חיצוניות —
 כל מה שמוצג בדשבורד זמין גם כאן, עם אותם חישובים בדיוק.
 
-- **Base URL:** `https://<כתובת-הדשבורד>/api/v1`
+- **Base URL:** `https://reap-dashboard.vercel.app/api/v1`
 - **מטבע:** USD
 - **פורמט:** JSON (ל-`/transactions` יש גם CSV)
 
@@ -12,7 +12,7 @@ API לקריאה בלבד (read-only) לנתוני דשבורד ההוצאות. 
 כל בקשה (חוץ מ-`GET /api/v1`) דורשת מפתח API:
 
 ```bash
-curl -H "Authorization: Bearer reap_xxxxxxxx" https://<host>/api/v1/summary
+curl -H "Authorization: Bearer reap_xxxxxxxx" https://reap-dashboard.vercel.app/api/v1/summary
 ```
 
 חלופות: כותרת `x-api-key: reap_xxxxxxxx`, או `?api_key=` בשורת הכתובת (פחות בטוח — נשמר בלוגים).
@@ -144,24 +144,24 @@ curl -H "Authorization: Bearer reap_xxxxxxxx" https://<host>/api/v1/summary
 
 ```bash
 # סיכום כללי
-curl -H "Authorization: Bearer $KEY" https://<host>/api/v1/summary
+curl -H "Authorization: Bearer $KEY" https://reap-dashboard.vercel.app/api/v1/summary
 
 # הוצאות רבעון לפי חברה
 curl -H "Authorization: Bearer $KEY" \
-  "https://<host>/api/v1/companies?from=2026-07-01&to=2026-09-30"
+  "https://reap-dashboard.vercel.app/api/v1/companies?from=2026-07-01&to=2026-09-30"
 
 # כל עסקאות ה-AI של אוגוסט
 curl -H "Authorization: Bearer $KEY" \
-  "https://<host>/api/v1/transactions?month=2026-08&tech_group=AI/API%20infra"
+  "https://reap-dashboard.vercel.app/api/v1/transactions?month=2026-08&tech_group=AI/API%20infra"
 
 # ייצוא CSV לאקסל
 curl -H "Authorization: Bearer $KEY" \
-  "https://<host>/api/v1/transactions?month=2026-08&format=csv" -o august.csv
+  "https://reap-dashboard.vercel.app/api/v1/transactions?month=2026-08&format=csv" -o august.csv
 ```
 
 ```javascript
 // Node / Next.js — תמיד מהשרת, לא מהדפדפן (המפתח לא אמור להיחשף ללקוח)
-const res = await fetch("https://<host>/api/v1/summary?month=2026-08", {
+const res = await fetch("https://reap-dashboard.vercel.app/api/v1/summary?month=2026-08", {
   headers: { Authorization: `Bearer ${process.env.REAP_API_KEY}` },
 });
 const { totals, by_month } = await res.json();
@@ -170,7 +170,7 @@ const { totals, by_month } = await res.json();
 ```python
 import requests
 r = requests.get(
-    "https://<host>/api/v1/suppliers",
+    "https://reap-dashboard.vercel.app/api/v1/suppliers",
     headers={"Authorization": f"Bearer {KEY}"},
     params={"from": "2026-01-01", "to": "2026-08-31"},
     timeout=30,
