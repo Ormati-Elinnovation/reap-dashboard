@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminClient from "@/components/AdminClient";
+import ApiKeysClient from "@/components/ApiKeysClient";
 
 export const dynamic = "force-dynamic";
 
@@ -17,5 +18,10 @@ export default async function AdminPage() {
     .maybeSingle();
   if (!access?.is_admin) redirect("/");
 
-  return <AdminClient currentEmail={user.email?.toLowerCase() ?? ""} />;
+  return (
+    <>
+      <AdminClient currentEmail={user.email?.toLowerCase() ?? ""} />
+      <ApiKeysClient />
+    </>
+  );
 }

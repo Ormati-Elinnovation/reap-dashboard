@@ -3,6 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Next.js 16: "Middleware" is now "Proxy". Optimistic auth check + session refresh.
 export async function proxy(request: NextRequest) {
+  // Public REST API (/api/v1): authenticated by API key inside the route handlers,
+  // never by the dashboard session — must not be redirected to /login.
+  if (request.nextUrl.pathname.startsWith("/api/")) return NextResponse.next();
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
