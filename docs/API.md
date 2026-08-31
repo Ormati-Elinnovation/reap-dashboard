@@ -7,6 +7,20 @@ API לקריאה בלבד (read-only) לנתוני דשבורד ההוצאות. 
 - **מטבע:** USD
 - **פורמט:** JSON (ל-`/transactions` יש גם CSV)
 
+## דף ניסוי אינטראקטיבי (Swagger)
+
+**https://reap-dashboard.vercel.app/api-docs** — כל נקודות הקצה, הפרמטרים ומבני התשובה,
+עם אפשרות להריץ קריאות אמיתיות מהדפדפן: לוחצים **Authorize**, מדביקים את המפתח, ומנסים.
+
+מפרט OpenAPI 3.1 גולמי: **https://reap-dashboard.vercel.app/api/v1/openapi.json** —
+אפשר לייבא אותו ל-Postman / Insomnia, או לייצר ממנו קוד לקוח:
+
+```bash
+npx @openapitools/openapi-generator-cli generate \
+  -i https://reap-dashboard.vercel.app/api/v1/openapi.json \
+  -g typescript-fetch -o ./reap-client
+```
+
 ## אימות
 
 כל בקשה (חוץ מ-`GET /api/v1`) דורשת מפתח API:

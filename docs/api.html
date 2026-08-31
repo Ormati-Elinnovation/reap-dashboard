@@ -224,6 +224,12 @@
       <span class="k">כתובת בסיס</span>
       <code>https://reap-dashboard.vercel.app/api/v1</code>
     </div>
+    <div class="baseurl">
+      <span class="k">ניסוי אינטראקטיבי</span>
+      <a href="https://reap-dashboard.vercel.app/api-docs">דף Swagger — הרצת קריאות מהדפדפן</a>
+      <span class="k">·</span>
+      <a href="https://reap-dashboard.vercel.app/api/v1/openapi.json">openapi.json</a>
+    </div>
   </header>
 
   <div class="cols">
@@ -255,7 +261,7 @@
           </li>
           <li>
             <b>קבלו JSON</b>
-            <span>סכומים מוכנים לשימוש — בלי צורך לחשב ממוצעים או פילוחים.</span>
+            <span>סכומים מוכנים לשימוש. לניסוי מהיר בלי לכתוב קוד — <a href="https://reap-dashboard.vercel.app/api-docs">דף ה-Swagger</a>.</span>
           </li>
         </ol>
 
@@ -472,6 +478,7 @@ for g in r.json()["groups"][:10]:
           <li><b>CORS פתוח כברירת מחדל.</b> להגבלה לדומיינים מוכרים: משתנה הסביבה <code>API_ALLOWED_ORIGINS</code>.</li>
           <li><b>אין הגבלת קצב.</b> הימנעו מפולינג תכוף; לקריאות חוזרות סננו לפי חודש או טווח תאריכים, ושמרו תוצאות במטמון אצלכם.</li>
           <li><b>סכומים מעוגלים</b> לשתי ספרות אחרי הנקודה, במטבע USD.</li>
+          <li><b>מפרט OpenAPI 3.1</b> זמין ב-<code>/api/v1/openapi.json</code> — לייבוא ל-Postman או ליצירת קוד לקוח אוטומטית.</li>
         </ul>
       </section>
 

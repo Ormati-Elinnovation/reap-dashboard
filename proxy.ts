@@ -5,7 +5,8 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   // Public REST API (/api/v1): authenticated by API key inside the route handlers,
   // never by the dashboard session — must not be redirected to /login.
-  if (request.nextUrl.pathname.startsWith("/api/")) return NextResponse.next();
+  const p = request.nextUrl.pathname;
+  if (p.startsWith("/api/") || p === "/api-docs") return NextResponse.next();
 
   let response = NextResponse.next({ request });
 

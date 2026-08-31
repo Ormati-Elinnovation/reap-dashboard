@@ -115,8 +115,8 @@ export default function ApiKeysClient() {
           {open ? "▲ סגור" : "▼ פתח"}
         </button>
         {open && (
-          <a className="btn" href="/api/v1" target="_blank" rel="noreferrer">
-            📖 רשימת נקודות קצה
+          <a className="btn" href="/api-docs" target="_blank" rel="noreferrer">
+            📖 תיעוד ה-API (Swagger)
           </a>
         )}
       </div>

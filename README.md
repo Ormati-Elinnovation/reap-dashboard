@@ -39,4 +39,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 הדשבורד חושף API לקריאה בלבד תחת `/api/v1`, עם מפתחות API שנוצרים במסך
 "🔐 ניהול הרשאות" (או דרך `npx tsx scripts/create-api-key.ts`).
-תיעוד מלא: [docs/API.md](docs/API.md).
+תיעוד מלא: [docs/API.md](docs/API.md) · Swagger: `/api-docs` · מפרט OpenAPI: `/api/v1/openapi.json`.

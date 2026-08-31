@@ -21,6 +21,13 @@ export function corsHeaders(origin: string | null): Record<string, string> {
   return h;
 }
 
+// Public origin of the current request (Vercel terminates TLS upstream, so trust the proxy headers).
+export function requestOrigin(req: Request): string {
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  return host ? `${proto}://${host}` : new URL(req.url).origin;
+}
+
 export function apiJson(req: Request, body: unknown, status = 200): NextResponse {
   return NextResponse.json(body, { status, headers: corsHeaders(req.headers.get("origin")) });
 }
