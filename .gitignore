@@ -40,7 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# project data (financial)
-data/*.json
+# project data (financial) — kept in this PRIVATE repo as the backup of record.
+# Statements and exports live under data/; only local scratch stays out.
 _data_backup/
 reap-dashboard-src/
