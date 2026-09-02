@@ -225,6 +225,16 @@ export default function MainPage() {
   const coMax = Math.max(1, ...coTotals.map(([, v]) => v));
   const supMax = Math.max(1, ...supTotals.map(([, v]) => v));
   const cardMax = Math.max(1, ...cardTotals.map(([, v]) => v.amt));
+  const orbitItems = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of lastRows) {
+      const k = classifyBiz(r);
+      m.set(k, (m.get(k) || 0) + r.amt);
+    }
+    return [...m.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, amt]) => ({ label, amt, href: "/categories" as const }));
+  }, [lastRows]);
 
   return (
     <>
@@ -252,20 +262,7 @@ export default function MainPage() {
         ]}
       />
 
-      <SpendOrbit
-        total={lastTot}
-        month={last ? monthLabel(last) : ""}
-        items={[...sumBy(lastRows, "company").entries()].length ? (() => {
-          const m = new Map<string, number>();
-          for (const r of lastRows) {
-            const k = classifyBiz(r);
-            m.set(k, (m.get(k) || 0) + r.amt);
-          }
-          return [...m.entries()]
-            .sort((a, b) => b[1] - a[1])
-            .map(([label, amt]) => ({ label, amt, href: "/categories" }));
-        })() : []}
-      />
+      <SpendOrbit total={lastTot} month={last ? monthLabel(last) : ""} items={orbitItems} />
 
       {insights.length > 0 && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12, margin: "12px 0" }}>

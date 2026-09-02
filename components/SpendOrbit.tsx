@@ -2,7 +2,15 @@
 import Link from "next/link";
 import { fmt } from "@/lib/format";
 
-const COLORS = ["#ff9900", "#58a6ff", "#3fb950", "#d2a8ff", "#f85149", "#79c0ff", "#e3b341", "#8b98a9"];
+const COLORS = [
+  "rgba(147,176,230,.55)",
+  "rgba(176,196,222,.55)",
+  "rgba(168,216,234,.5)",
+  "rgba(198,186,232,.5)",
+  "rgba(186,214,210,.5)",
+  "rgba(210,200,230,.5)",
+  "rgba(160,196,232,.5)",
+];
 
 export type OrbitItem = { label: string; amt: number; href?: string };
 
