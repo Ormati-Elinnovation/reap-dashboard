@@ -96,15 +96,17 @@ export default function SideNav({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <>
-      <button className="btn burger" onClick={() => setOpen(true)} aria-label="פתח תפריט">
-        ☰ תפריט
+      <button className="burger" onClick={() => setOpen(true)} aria-label="תפריט" title="תפריט">
+        <span className="burger-lines" aria-hidden>
+          <span /><span /><span />
+        </span>
       </button>
 
       {open && <div className="scrim" onClick={() => setOpen(false)} />}
 
       <aside className={`sidenav ${open ? "open" : ""}`} aria-hidden={!open}>
         <div className="sidenav-head">
-          <strong>Reap — הוצאות</strong>
+          <strong>Reap</strong>
           <button className="mini" onClick={() => setOpen(false)} aria-label="סגור">✕</button>
         </div>
 

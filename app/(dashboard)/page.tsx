@@ -223,15 +223,6 @@ export default function MainPage() {
   }, [lastRows]);
   const coMax = Math.max(1, ...coTotals.map(([, v]) => v));
   const supMax = Math.max(1, ...supTotals.map(([, v]) => v));
-  const catTotals = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const r of lastRows) {
-      const k = classifyBiz(r);
-      m.set(k, (m.get(k) || 0) + r.amt);
-    }
-    return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [lastRows]);
-  const catMax = Math.max(1, ...catTotals.map(([, v]) => v));
   const cardMax = Math.max(1, ...cardTotals.map(([, v]) => v.amt));
 
   return (
