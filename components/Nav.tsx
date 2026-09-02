@@ -10,6 +10,7 @@ const LABELS: Record<string, string> = {
   "/servers": "☁️ שרתים",
   "/cards": "💳 כרטיסים",
   "/suppliers": "🏢 ספקים",
+  "/statements": "📄 דפי חשבון",
 };
 const DEFAULT_ORDER = Object.keys(LABELS);
 const KEY = "reap-nav-order";
