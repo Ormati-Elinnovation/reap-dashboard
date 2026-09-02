@@ -18,6 +18,10 @@ export default function PivotTable({
   groupLabel,
   subLabel,
   exclude,
+  lastNMonths,
+  shareOfLast,
+  hideTot,
+  hideN,
 }: {
   groups: PivotGroup[];
   months: string[];
@@ -27,6 +31,10 @@ export default function PivotTable({
   groupLabel: (g: PivotGroup) => ReactNode;
   subLabel: (s: PivotSub) => ReactNode;
   exclude?: ExcludeConfig;
+  lastNMonths?: number;
+  shareOfLast?: boolean;
+  hideTot?: boolean;
+  hideN?: boolean;
 }) {
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [sortK, setSortK] = useState<string>("tot");
@@ -34,6 +42,8 @@ export default function PivotTable({
   const [showAll, setShowAll] = useState(false);
   const PAGE = 120;
 
+  const shownMonths = lastNMonths && lastNMonths > 0 ? months.slice(-lastNMonths) : months;
+  const lastMo = shownMonths[shownMonths.length - 1];
   const div = nMon || 1;
   function val(g: PivotGroup, k: string): number | string {
     if (k === "name") return g.key;
@@ -71,9 +81,10 @@ export default function PivotTable({
   }
 
   const arrow = (k: string) => (sortK === k ? (sortDir > 0 ? " ▲" : " ▼") : "");
-  const footMon = months.map((mo) => included.reduce((a, g) => a + (g.mon[mo] || 0), 0));
+  const footMon = shownMonths.map((mo) => included.reduce((a, g) => a + (g.mon[mo] || 0), 0));
   const footTot = included.reduce((a, g) => a + g.tot, 0);
   const footN = included.reduce((a, g) => a + g.n, 0);
+  const lastMonthTot = lastMo ? included.reduce((a, g) => a + (g.mon[lastMo] || 0), 0) : 0;
 
   return (
     <>
@@ -102,22 +113,29 @@ export default function PivotTable({
                 {firstCol}
                 {arrow("name")}
               </th>
-              {months.map((mo) => (
+              {shownMonths.map((mo) => (
                 <th key={mo} style={{ textAlign: "right" }} onClick={() => sortBy(mo)}>
                   {monthLabel(mo)}
                   {mo === partial ? " (חלקי)" : ""}
                   {arrow(mo)}
                 </th>
               ))}
-              <th style={{ textAlign: "right" }} onClick={() => sortBy("tot")}>
-                סה&quot;כ{arrow("tot")}
-              </th>
+              {shareOfLast && lastMo && (
+                <th style={{ textAlign: "right" }}>% {monthLabel(lastMo)}</th>
+              )}
+              {!hideTot && (
+                <th style={{ textAlign: "right" }} onClick={() => sortBy("tot")}>
+                  סה"כ{arrow("tot")}
+                </th>
+              )}
               <th style={{ textAlign: "right" }} onClick={() => sortBy("avg")}>
                 ממוצע חודשי{arrow("avg")}
               </th>
-              <th style={{ textAlign: "right" }} onClick={() => sortBy("n")}>
-                עסקאות{arrow("n")}
-              </th>
+              {!hideN && (
+                <th style={{ textAlign: "right" }} onClick={() => sortBy("n")}>
+                  עסקאות{arrow("n")}
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -128,7 +146,7 @@ export default function PivotTable({
                 <FragmentRow
                   key={g.key}
                   g={g}
-                  months={months}
+                  months={shownMonths}
                   div={div}
                   isOff={isOff}
                   isOpen={isOpen}
@@ -136,27 +154,37 @@ export default function PivotTable({
                   groupLabel={groupLabel}
                   subLabel={subLabel}
                   onToggleOpen={() => toggleOpen(g.key)}
+                  lastMo={shareOfLast ? lastMo : undefined}
+                  lastMonthTot={lastMonthTot}
+                  hideTot={hideTot}
+                  hideN={hideN}
                 />
               );
             })}
           </tbody>
           <tfoot>
             <tr>
-              <td>סה&quot;כ ({included.length})</td>
+              <td>סה"כ ({included.length})</td>
               {footMon.map((s, i) => (
                 <td key={i} style={{ textAlign: "right" }}>
                   ${fmt(s)}
                 </td>
               ))}
-              <td style={{ textAlign: "right" }}>${fmt(footTot)}</td>
+              {shareOfLast && <td style={{ textAlign: "right" }}>100%</td>}
+              {!hideTot && <td style={{ textAlign: "right" }}>${fmt(footTot)}</td>}
               <td style={{ textAlign: "right", color: "var(--accent)" }}>${fmt(footTot / div)}</td>
-              <td style={{ textAlign: "right" }}>{footN}</td>
+              {!hideN && <td style={{ textAlign: "right" }}>{footN}</td>}
             </tr>
           </tfoot>
         </table>
       </div>
     </>
   );
+}
+
+function sharePct(part: number, tot: number): string {
+  if (!tot) return "—";
+  return `${((part / tot) * 100).toFixed(0)}%`;
 }
 
 function FragmentRow({
@@ -169,6 +197,10 @@ function FragmentRow({
   groupLabel,
   subLabel,
   onToggleOpen,
+  lastMo,
+  lastMonthTot,
+  hideTot,
+  hideN,
 }: {
   g: PivotGroup;
   months: string[];
@@ -179,6 +211,10 @@ function FragmentRow({
   groupLabel: (g: PivotGroup) => ReactNode;
   subLabel: (s: PivotSub) => ReactNode;
   onToggleOpen: () => void;
+  lastMo?: string;
+  lastMonthTot?: number;
+  hideTot?: boolean;
+  hideN?: boolean;
 }) {
   return (
     <>
@@ -187,7 +223,7 @@ function FragmentRow({
           {exclude && (
             <span
               className="ck"
-              title="הוסף/הסר מהסה&quot;כ"
+              title="הוסף/הסר מהסהכ"
               onClick={(e) => {
                 e.stopPropagation();
                 exclude.onToggle(g.key);
@@ -204,9 +240,12 @@ function FragmentRow({
             {g.mon[mo] ? "$" + fmt(g.mon[mo]) : "—"}
           </td>
         ))}
-        <td style={{ textAlign: "right", fontWeight: 700 }}>${fmt(g.tot)}</td>
+        {lastMo && (
+          <td style={{ textAlign: "right", fontWeight: 700 }}>{sharePct(g.mon[lastMo] || 0, lastMonthTot || 0)}</td>
+        )}
+        {!hideTot && <td style={{ textAlign: "right", fontWeight: 700 }}>${fmt(g.tot)}</td>}
         <td style={{ textAlign: "right", color: "var(--accent)", fontWeight: 700 }}>${fmt(g.tot / div)}</td>
-        <td style={{ textAlign: "right" }}>{g.n}</td>
+        {!hideN && <td style={{ textAlign: "right" }}>{g.n}</td>}
       </tr>
       {isOpen &&
         g.subs.map((s) => (
@@ -217,9 +256,12 @@ function FragmentRow({
                 {s.mon[mo] ? "$" + fmt(s.mon[mo]) : "—"}
               </td>
             ))}
-            <td style={{ textAlign: "right" }}>${fmt(s.tot)}</td>
+            {lastMo && (
+              <td style={{ textAlign: "right" }}>{sharePct(s.mon[lastMo] || 0, lastMonthTot || 0)}</td>
+            )}
+            {!hideTot && <td style={{ textAlign: "right" }}>${fmt(s.tot)}</td>}
             <td style={{ textAlign: "right" }}>${fmt(s.tot / div)}</td>
-            <td style={{ textAlign: "right" }}>{s.n}</td>
+            {!hideN && <td style={{ textAlign: "right" }}>{s.n}</td>}
           </tr>
         ))}
     </>

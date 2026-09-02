@@ -292,30 +292,6 @@ export default function MainPage() {
 
       <MonthlyChart months={months} totals={mTot} partial={partial} />
 
-      <div className="card" style={{ margin: "12px 0" }}>
-        <div className="lbl" style={{ marginBottom: 10 }}>
-          🗂️ פילוח לפי סוג הוצאה — {last ? monthLabel(last) : ""}
-        </div>
-        {lastTot > 0 && (
-          <div dir="ltr" style={{ display: "flex", height: 18, borderRadius: 8, overflow: "hidden", marginBottom: 14, background: "var(--panel2)" }}>
-            {catTotals.map(([c, v], i) => (
-              <div
-                key={c}
-                title={`${c}: $${fmt(v)}`}
-                style={{
-                  width: `${(v / lastTot) * 100}%`,
-                  background: ["#ff9900", "#58a6ff", "#3fb950", "#d2a8ff", "#f85149", "#79c0ff", "#e3b341", "#8b98a9"][i % 8],
-                  minWidth: v / lastTot > 0.01 ? 4 : 0,
-                }}
-              />
-            ))}
-          </div>
-        )}
-        {catTotals.map(([c, v]) => (
-          <HBar key={c} label={`${c} · ${((v / Math.max(1, lastTot)) * 100).toFixed(0)}%`} value={v} max={catMax} />
-        ))}
-      </div>
-
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 12, margin: "12px 0" }}>
         <div className="card">
           <div className="lbl" style={{ marginBottom: 10 }}>
@@ -360,6 +336,10 @@ export default function MainPage() {
         partial={partial}
         nMon={nMon}
         firstCol="סוג הוצאה / ספק"
+        lastNMonths={3}
+        shareOfLast
+        hideTot
+        hideN
         groupLabel={(g) => <strong>{g.key}</strong>}
         subLabel={(s) => <EntityLink kind="merchant" value={s.key}>{s.key}</EntityLink>}
       />
@@ -371,6 +351,10 @@ export default function MainPage() {
         partial={partial}
         nMon={nMon}
         firstCol="חברה / כרטיס"
+        lastNMonths={3}
+        shareOfLast
+        hideTot
+        hideN
         groupLabel={(g) => (
           <strong><EntityLink kind="company" value={g.key}>{g.key}</EntityLink></strong>
         )}
