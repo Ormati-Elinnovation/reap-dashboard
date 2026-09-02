@@ -39,11 +39,12 @@ function buildInsights(tx: Transaction[], months: string[], partial: string | nu
 
   // 1. Total trend
   const d = pct(curTot, prevTot);
+  const totDelta = curTot - prevTot;
   if (Math.abs(d) >= 5)
     out.push({
       icon: d > 0 ? "📈" : "📉",
       tone: d > 0 ? "warn" : "good",
-      text: `סה"כ ההוצאות ב${monthLabel(cur)} ${d > 0 ? "עלו" : "ירדו"} ב-${Math.abs(d).toFixed(0)}% לעומת ${monthLabel(prev)} ($${fmt(curTot)} מול $${fmt(prevTot)})`,
+      text: `סה"כ ההוצאות ב${monthLabel(cur)} ${d > 0 ? "עלו" : "ירדו"} ב-$${fmt(Math.abs(totDelta))} (${Math.abs(d).toFixed(0)}%) לעומת ${monthLabel(prev)} — $${fmt(curTot)} מול $${fmt(prevTot)}`,
     });
 
   // 2. Biggest company movers
@@ -58,7 +59,7 @@ function buildInsights(tx: Transaction[], months: string[], partial: string | nu
     out.push({
       icon: "🏛️",
       tone: bestDelta > 0 ? "warn" : "good",
-      text: `${bestCo} היא החברה עם השינוי הגדול ביותר: ${bestDelta > 0 ? "+" : "−"}$${fmt(Math.abs(bestDelta))} לעומת ${monthLabel(prev)}`,
+      text: `${bestCo} היא החברה עם השינוי הגדול ביותר: ${bestDelta > 0 ? "עלייה" : "ירידה"} של $${fmt(Math.abs(bestDelta))} לעומת ${monthLabel(prev)}`,
     });
 
   // 2b. Card insights — who spent most, biggest swing, concentration
@@ -111,7 +112,7 @@ function buildInsights(tx: Transaction[], months: string[], partial: string | nu
     out.push({
       icon: bestCardDelta > 0 ? "📈" : "📉",
       tone: bestCardDelta > 0 ? "warn" : "good",
-      text: `השינוי הכרטיסי החד ביותר: ${cardLabel(bestCard)} ${bestCardDelta > 0 ? "+" : "−"}$${fmt(Math.abs(bestCardDelta))} לעומת ${monthLabel(prev)}`,
+      text: `השינוי הכרטיסי החד ביותר: ${cardLabel(bestCard)} — ${bestCardDelta > 0 ? "עלייה" : "ירידה"} של $${fmt(Math.abs(bestCardDelta))} לעומת ${monthLabel(prev)}`,
     });
   const newCards = cardRank.filter(([id, v]) => v >= 200 && !prevCard.spend.has(id));
   for (const [id, v] of newCards.slice(0, 2))
@@ -145,7 +146,7 @@ function buildInsights(tx: Transaction[], months: string[], partial: string | nu
   }
   jumps.sort((a, b) => b.to - b.from - (a.to - a.from));
   for (const j of jumps.slice(0, 2))
-    out.push({ icon: "⚡", tone: "warn", text: `${j.name} זינק פי ${(j.to / j.from).toFixed(1)}: $${fmt(j.from)} → $${fmt(j.to)}` });
+    out.push({ icon: "⚡", tone: "warn", text: `${j.name} זינק פי ${(j.to / j.from).toFixed(1)}: עלייה של $${fmt(j.to - j.from)} ($${fmt(j.from)} → $${fmt(j.to)}) לעומת ${monthLabel(prev)}` });
 
   // 5. New significant suppliers
   const newSups = curSup.filter(([name, v]) => v >= 300 && !prevSup.has(name));
