@@ -61,6 +61,71 @@ function buildInsights(tx: Transaction[], months: string[], partial: string | nu
       text: `${bestCo} היא החברה עם השינוי הגדול ביותר: ${bestDelta > 0 ? "+" : "−"}$${fmt(Math.abs(bestDelta))} לעומת ${monthLabel(prev)}`,
     });
 
+  // 2b. Card insights — who spent most, biggest swing, concentration
+  const cardMeta = (rows: Transaction[]) => {
+    const spend = new Map<string, number>();
+    const holder = new Map<string, string>();
+    const company = new Map<string, string>();
+    for (const r of rows) {
+      const k = r.card || "ללא כרטיס";
+      spend.set(k, (spend.get(k) || 0) + r.amt);
+      if (r.holder) holder.set(k, r.holder);
+      if (r.company) company.set(k, r.company);
+    }
+    return { spend, holder, company };
+  };
+  const curCard = cardMeta(curRows);
+  const prevCard = cardMeta(prevRows);
+  const cardRank = [...curCard.spend.entries()].sort((a, b) => b[1] - a[1]);
+  const cardLabel = (id: string) => {
+    const h = curCard.holder.get(id) || prevCard.holder.get(id);
+    const co = curCard.company.get(id) || prevCard.company.get(id);
+    const last4 = id.length >= 4 ? id.slice(-4) : id;
+    const bits = [`••${last4}`];
+    if (h) bits.push(h);
+    if (co) bits.push(co);
+    return bits.join(" · ");
+  };
+  if (cardRank.length && curTot > 0) {
+    const [topId, topAmt] = cardRank[0];
+    out.push({
+      icon: "💳",
+      tone: topAmt / curTot > 0.35 ? "warn" : "info",
+      text: `הכרטיס שהוציא הכי הרבה ב${monthLabel(cur)}: ${cardLabel(topId)} — $${fmt(topAmt)} (${((topAmt / curTot) * 100).toFixed(0)}% מסך ההוצאות)`,
+    });
+    const top3 = cardRank.slice(0, 3).reduce((s, [, v]) => s + v, 0);
+    if (cardRank.length >= 3 && top3 / curTot >= 0.7)
+      out.push({
+        icon: "🔢",
+        tone: "info",
+        text: `ריכוז כרטיסים: 3 הכרטיסים המובילים מהווים ${((top3 / curTot) * 100).toFixed(0)}% מהוצאות ${monthLabel(cur)}`,
+      });
+  }
+  let bestCard = "", bestCardDelta = 0;
+  const allCardIds = new Set([...curCard.spend.keys(), ...prevCard.spend.keys()]);
+  for (const id of allCardIds) {
+    const delta = (curCard.spend.get(id) || 0) - (prevCard.spend.get(id) || 0);
+    if (Math.abs(delta) > Math.abs(bestCardDelta)) { bestCardDelta = delta; bestCard = id; }
+  }
+  if (bestCard && Math.abs(bestCardDelta) > 400)
+    out.push({
+      icon: bestCardDelta > 0 ? "📈" : "📉",
+      tone: bestCardDelta > 0 ? "warn" : "good",
+      text: `השינוי הכרטיסי החד ביותר: ${cardLabel(bestCard)} ${bestCardDelta > 0 ? "+" : "−"}$${fmt(Math.abs(bestCardDelta))} לעומת ${monthLabel(prev)}`,
+    });
+  const newCards = cardRank.filter(([id, v]) => v >= 200 && !prevCard.spend.has(id));
+  for (const [id, v] of newCards.slice(0, 2))
+    out.push({ icon: "🆕", tone: "info", text: `כרטיס פעיל חדש ב${monthLabel(cur)}: ${cardLabel(id)} — $${fmt(v)}` });
+  const quietCards = [...prevCard.spend.entries()]
+    .filter(([id, v]) => v >= 300 && !(curCard.spend.get(id) || 0))
+    .sort((a, b) => b[1] - a[1]);
+  for (const [id, v] of quietCards.slice(0, 1))
+    out.push({
+      icon: "🛑",
+      tone: "info",
+      text: `כרטיס שהיה פעיל ב${monthLabel(prev)} (הוציא $${fmt(v)}) לא הופיע ב${monthLabel(cur)}: ${cardLabel(id)}`,
+    });
+
   // 3. Top supplier + concentration
   const curSup = [...sumBy(curRows, "merchant").entries()].sort((a, b) => b[1] - a[1]);
   if (curSup.length) {
@@ -97,7 +162,7 @@ function buildInsights(tx: Transaction[], months: string[], partial: string | nu
   if (refunds < -100)
     out.push({ icon: "↩️", tone: "good", text: `זיכויים והחזרים ב${monthLabel(cur)}: $${fmt(Math.abs(refunds))}` });
 
-  return out.slice(0, 7);
+  return out.slice(0, 10);
 }
 
 function HBar({ label, value, max, sub }: { label: string; value: number; max: number; sub?: string }) {
@@ -137,8 +202,23 @@ export default function MainPage() {
     () => [...sumBy(lastRows, "merchant").entries()].sort((a, b) => b[1] - a[1]).slice(0, 6),
     [lastRows]
   );
+  const cardTotals = useMemo(() => {
+    const spend = new Map<string, { amt: number; holder: string; company: string }>();
+    for (const r of lastRows) {
+      const k = r.card || "ללא כרטיס";
+      const cur = spend.get(k) || { amt: 0, holder: r.holder || "", company: r.company || "" };
+      cur.amt += r.amt;
+      if (r.holder) cur.holder = r.holder;
+      if (r.company) cur.company = r.company;
+      spend.set(k, cur);
+    }
+    return [...spend.entries()]
+      .sort((a, b) => b[1].amt - a[1].amt)
+      .slice(0, 8);
+  }, [lastRows]);
   const coMax = Math.max(1, ...coTotals.map(([, v]) => v));
   const supMax = Math.max(1, ...supTotals.map(([, v]) => v));
+  const cardMax = Math.max(1, ...cardTotals.map(([, v]) => v.amt));
 
   return (
     <>
@@ -156,6 +236,13 @@ export default function MainPage() {
           { lbl: prev ? monthLabel(prev) : "חודש קודם", val: "$" + fmt(prevTot), cnt: prev ? `${tx.filter((r) => r.month === prev).length} עסקאות` : undefined },
           { lbl: "ממוצע חודשי", val: "$" + fmt(tot / nMon), cnt: `${nMon} חודשים · $${fmt(tot)} סה"כ` },
           { lbl: "עסקאות החודש", val: String(lastRows.length), cnt: `${new Set(lastRows.map((r) => r.merchant)).size} ספקים פעילים` },
+          {
+            lbl: "כרטיס מוביל",
+            val: cardTotals[0] ? "$" + fmt(cardTotals[0][1].amt) : "—",
+            cnt: cardTotals[0]
+              ? `••${(cardTotals[0][0].length >= 4 ? cardTotals[0][0].slice(-4) : cardTotals[0][0])} · ${cardTotals[0][1].holder || cardTotals[0][1].company}`
+              : undefined,
+          },
         ]}
       />
 
@@ -195,6 +282,20 @@ export default function MainPage() {
           </div>
           {supTotals.map(([s, v]) => (
             <HBar key={s} label={s} value={v} max={supMax} />
+          ))}
+        </div>
+        <div className="card">
+          <div className="lbl" style={{ marginBottom: 10 }}>
+            💳 כרטיסים מובילים — {last ? monthLabel(last) : ""}
+          </div>
+          {cardTotals.map(([id, v]) => (
+            <HBar
+              key={id}
+              label={`••${id.length >= 4 ? id.slice(-4) : id}${v.holder ? " · " + v.holder : ""}`}
+              value={v.amt}
+              max={cardMax}
+              sub={v.company}
+            />
           ))}
         </div>
       </div>
