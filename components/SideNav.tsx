@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { triggerReload } from "@/lib/dataStore";
 import { useEffect, useState } from "react";
 
 type Item = { href: string; label: string };
@@ -40,6 +42,43 @@ const ADMIN_ITEMS: Item[] = [
   { href: "/manual", label: "🖊️ הזנה ידנית" },
   { href: "/admin", label: "🔐 ניהול הרשאות" },
 ];
+
+function Actions({ close }: { close: () => void }) {
+  const router = useRouter();
+  const [light, setLight] = useState(false);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => setLight(document.documentElement.dataset.theme === "light"), []);
+
+  function toggleTheme() {
+    const next = document.documentElement.dataset.theme === "light" ? "" : "light";
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem("theme", next);
+    } catch {}
+    setLight(next === "light");
+  }
+  function refresh() {
+    setBusy(true);
+    triggerReload();
+    setTimeout(() => setBusy(false), 800);
+    close();
+  }
+  async function signOut() {
+    await createClient().auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
+  return (
+    <div className="sidenav-group sidenav-actions">
+      <div className="sidenav-title">פעולות</div>
+      <button onClick={refresh}>{busy ? "…מרענן" : "🔄 רענן נתונים"}</button>
+      <button onClick={toggleTheme}>{light ? "🌙 מצב לילה" : "☀️ מצב יום"}</button>
+      <Link href="/account" onClick={close}>🔑 שינוי סיסמה</Link>
+      <button onClick={signOut}>🚪 יציאה</button>
+    </div>
+  );
+}
 
 export default function SideNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const path = usePathname();
@@ -90,6 +129,8 @@ export default function SideNav({ isAdmin = false }: { isAdmin?: boolean }) {
             ))}
           </div>
         )}
+
+        <Actions close={() => setOpen(false)} />
       </aside>
     </>
   );
