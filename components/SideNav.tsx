@@ -106,7 +106,7 @@ export default function SideNav({ isAdmin = false }: { isAdmin?: boolean }) {
 
       <aside className={`sidenav ${open ? "open" : ""}`} aria-hidden={!open}>
         <div className="sidenav-head">
-          <strong>Reap</strong>
+          <Link href="/" onClick={() => setOpen(false)}><strong>הוצאות כרטיסי אשראי</strong></Link>
           <button className="mini" onClick={() => setOpen(false)} aria-label="סגור">✕</button>
         </div>
 

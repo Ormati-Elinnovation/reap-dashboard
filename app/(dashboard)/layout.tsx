@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="hdr">
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <SideNav isAdmin={isAdmin} />
-          <h1>Reap</h1>
+          <h1 style={{ margin: 0 }}><a href="/" style={{ color: "inherit", textDecoration: "none" }}>הוצאות כרטיסי אשראי</a></h1>
         </div>
       </div>
       <TransactionsProvider isAdmin={isAdmin}>{children}</TransactionsProvider>
