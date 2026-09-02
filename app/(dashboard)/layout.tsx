@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { TransactionsProvider } from "@/components/TransactionsProvider";
 import Nav from "@/components/Nav";
+import SideNav from "@/components/SideNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import SignOutButton from "@/components/SignOutButton";
 import RefreshButton from "@/components/RefreshButton";
@@ -26,7 +27,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="wrap">
       <div className="hdr">
-        <h1>Reap — הוצאות</h1>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <SideNav isAdmin={isAdmin} />
+          <h1>Reap — הוצאות</h1>
+        </div>
         <div style={{ display: "flex", gap: 8 }}>
           <RefreshButton />
           <Link href="/account" className="btn">🔑 סיסמה</Link>

@@ -1,0 +1,96 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+type Item = { href: string; label: string };
+type Group = { title: string; items: Item[] };
+
+const GROUPS: Group[] = [
+  {
+    title: "סקירה",
+    items: [
+      { href: "/", label: "🏠 סקירה כללית" },
+      { href: "/all", label: "📋 כל ההוצאות" },
+    ],
+  },
+  {
+    title: "פילוחים",
+    items: [
+      { href: "/companies", label: "🏛️ לפי חברה" },
+      { href: "/cards", label: "💳 לפי כרטיס" },
+      { href: "/suppliers", label: "🏢 לפי ספק" },
+      { href: "/categories", label: "🗂️ לפי סוג הוצאה" },
+    ],
+  },
+  {
+    title: "טכנולוגיה",
+    items: [
+      { href: "/technology", label: "🖥️ Technology Expenses" },
+      { href: "/servers", label: "☁️ שרתים" },
+    ],
+  },
+  {
+    title: "מסמכים",
+    items: [{ href: "/statements", label: "📄 דפי חשבון" }],
+  },
+];
+
+const ADMIN_ITEMS: Item[] = [
+  { href: "/manual", label: "🖊️ הזנה ידנית" },
+  { href: "/admin", label: "🔐 ניהול הרשאות" },
+];
+
+export default function SideNav({ isAdmin = false }: { isAdmin?: boolean }) {
+  const path = usePathname();
+  const [open, setOpen] = useState(false);
+
+  // Close the drawer on navigation and on Escape.
+  useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+
+  return (
+    <>
+      <button className="btn burger" onClick={() => setOpen(true)} aria-label="פתח תפריט">
+        ☰ תפריט
+      </button>
+
+      {open && <div className="scrim" onClick={() => setOpen(false)} />}
+
+      <aside className={`sidenav ${open ? "open" : ""}`} aria-hidden={!open}>
+        <div className="sidenav-head">
+          <strong>Reap — הוצאות</strong>
+          <button className="mini" onClick={() => setOpen(false)} aria-label="סגור">✕</button>
+        </div>
+
+        {GROUPS.map((g) => (
+          <div key={g.title} className="sidenav-group">
+            <div className="sidenav-title">{g.title}</div>
+            {g.items.map((it) => (
+              <Link key={it.href} href={it.href} className={isActive(it.href) ? "active" : ""}>
+                {it.label}
+              </Link>
+            ))}
+          </div>
+        ))}
+
+        {isAdmin && (
+          <div className="sidenav-group">
+            <div className="sidenav-title">ניהול</div>
+            {ADMIN_ITEMS.map((it) => (
+              <Link key={it.href} href={it.href} className={isActive(it.href) ? "active" : ""}>
+                {it.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </aside>
+    </>
+  );
+}
