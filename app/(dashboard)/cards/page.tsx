@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTx } from "@/components/TransactionsProvider";
 import { useBasket } from "@/lib/store";
 import { COMPANY_ORDER } from "@/lib/types";
@@ -25,7 +26,10 @@ const COLS: Column[] = [
 
 export default function CardsPage() {
   const { tx, months, partial } = useTx();
-  const { view, inBasket, offSup, init, toggleSup, setSups } = useBasket();
+  const { view, inBasket, offSup, init, toggleSup, setSups, setCards } = useBasket();
+  const params = useSearchParams();
+  const focusCard = params.get("card");
+  const focusHolder = params.get("holder");
 
   const meta = useMemo<CardMeta[]>(() => {
     const m = new Map<string, CardMeta & { _t: number }>();
@@ -40,6 +44,24 @@ export default function CardsPage() {
   useEffect(() => {
     init(meta.map((m) => m.card));
   }, [meta, init]);
+
+  useEffect(() => {
+    if (!meta.length) return;
+    const all = meta.map((m) => m.card);
+    if (focusCard) {
+      const hit = meta.find((m) => m.card === focusCard || m.card.endsWith(focusCard));
+      if (hit) {
+        setCards(all, false);
+        setCards([hit.card], true);
+      }
+    } else if (focusHolder) {
+      const hits = meta.filter((m) => m.holder.toLowerCase() === focusHolder.toLowerCase());
+      if (hits.length) {
+        setCards(all, false);
+        setCards(hits.map((h) => h.card), true);
+      }
+    }
+  }, [focusCard, focusHolder, meta, setCards]);
 
   const companies = COMPANY_ORDER.filter((c) => meta.some((m) => m.company === c));
 

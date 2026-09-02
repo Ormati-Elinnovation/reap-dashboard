@@ -9,6 +9,7 @@ import { buildPivot, monthTotals } from "@/lib/pivot";
 import { fmt } from "@/lib/format";
 import type { Column } from "@/lib/filterEngine";
 import type { Transaction } from "@/lib/types";
+import EntityLink from "@/components/EntityLink";
 
 const COLS: Column[] = [
   { k: "date", t: "תאריך", type: "text" },
@@ -65,7 +66,12 @@ export default function ServersPage() {
         groupLabel={(g) => <b>{g.key}</b>}
         subLabel={(s) => (
           <>
-            ↳ כרטיס {s.key} <span className="muted">({s.extra.holder} · {s.extra.company})</span>
+            ↳ <EntityLink kind="card" value={s.key}>כרטיס {s.key}</EntityLink>{" "}
+            <span className="muted">(
+              <EntityLink kind="holder" value={s.extra.holder}>{s.extra.holder}</EntityLink>
+              {" · "}
+              <EntityLink kind="company" value={s.extra.company}>{s.extra.company}</EntityLink>
+            )</span>
           </>
         )}
       />

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useTx } from "@/components/TransactionsProvider";
 import SummaryCards from "@/components/SummaryCards";
 import PivotTable from "@/components/PivotTable";
@@ -8,6 +8,7 @@ import { buildPivot, monthTotals } from "@/lib/pivot";
 import { fmt } from "@/lib/format";
 import { monthLabel } from "@/lib/months";
 import type { Transaction } from "@/lib/types";
+import EntityLink from "@/components/EntityLink";
 
 type Insight = { icon: string; text: string; tone?: "warn" | "good" | "info" };
 
@@ -166,7 +167,7 @@ function buildInsights(tx: Transaction[], months: string[], partial: string | nu
   return out.slice(0, 10);
 }
 
-function HBar({ label, value, max, sub }: { label: string; value: number; max: number; sub?: string }) {
+function HBar({ label, value, max, sub }: { label: ReactNode; value: number; max: number; sub?: ReactNode }) {
   return (
     <div style={{ marginBottom: 8 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 3 }}>
@@ -231,7 +232,7 @@ export default function MainPage() {
             val: "$" + fmt(lastTot),
             accent: true,
             cnt: prev
-              ? `${delta > 0 ? "▲" : delta < 0 ? "▼" : "▬"} ${Math.abs(delta).toFixed(0)}% לעומת ${monthLabel(prev)}`
+              ? `${delta > 0 ? "▲" : delta < 0 ? "▼" : "▬"} $${fmt(Math.abs(lastTot - prevTot))} (${Math.abs(delta).toFixed(0)}%) לעומת ${monthLabel(prev)}`
               : undefined,
           },
           { lbl: prev ? monthLabel(prev) : "חודש קודם", val: "$" + fmt(prevTot), cnt: prev ? `${tx.filter((r) => r.month === prev).length} עסקאות` : undefined },
@@ -285,7 +286,7 @@ export default function MainPage() {
             🏛️ חברות — {last ? monthLabel(last) : ""}
           </div>
           {coTotals.map(([co, v]) => (
-            <HBar key={co} label={co} value={v} max={coMax} />
+            <HBar key={co} label={<EntityLink kind="company" value={co}>{co}</EntityLink>} value={v} max={coMax} />
           ))}
         </div>
         <div className="card">
@@ -293,7 +294,7 @@ export default function MainPage() {
             🏢 ספקים מובילים — {last ? monthLabel(last) : ""}
           </div>
           {supTotals.map(([s, v]) => (
-            <HBar key={s} label={s} value={v} max={supMax} />
+            <HBar key={s} label={<EntityLink kind="merchant" value={s}>{s}</EntityLink>} value={v} max={supMax} />
           ))}
         </div>
         <div className="card">
@@ -303,10 +304,14 @@ export default function MainPage() {
           {cardTotals.map(([id, v]) => (
             <HBar
               key={id}
-              label={`••${id.length >= 4 ? id.slice(-4) : id}${v.holder ? " · " + v.holder : ""}`}
+              label={
+                <EntityLink kind="card" value={id}>
+                  {`••${id.length >= 4 ? id.slice(-4) : id}${v.holder ? " · " + v.holder : ""}`}
+                </EntityLink>
+              }
               value={v.amt}
               max={cardMax}
-              sub={v.company}
+              sub={<EntityLink kind="company" value={v.company}>{v.company}</EntityLink>}
             />
           ))}
         </div>
@@ -319,8 +324,14 @@ export default function MainPage() {
         partial={partial}
         nMon={nMon}
         firstCol="חברה / כרטיס"
-        groupLabel={(g) => <strong>{g.key}</strong>}
-        subLabel={(s) => (s.extra?.holder ? `${s.key} · ${s.extra.holder}` : s.key)}
+        groupLabel={(g) => (
+          <strong><EntityLink kind="company" value={g.key}>{g.key}</EntityLink></strong>
+        )}
+        subLabel={(s) => (
+          <EntityLink kind="card" value={s.key}>
+            {s.extra?.holder ? `${s.key} · ${s.extra.holder}` : s.key}
+          </EntityLink>
+        )}
       />
     </>
   );

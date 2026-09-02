@@ -1,6 +1,8 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTx } from "@/components/TransactionsProvider";
+import EntityLink from "@/components/EntityLink";
 import SummaryCards from "@/components/SummaryCards";
 import PivotTable from "@/components/PivotTable";
 import MonthlyChart from "@/components/MonthlyChart";
@@ -12,7 +14,12 @@ import { monthLabel } from "@/lib/months";
 
 export default function CompaniesPage() {
   const { tx, months, partial } = useTx();
-  const [co, setCo] = useState<string>("__all__");
+  const params = useSearchParams();
+  const [co, setCo] = useState<string>(() => params.get("company") || "__all__");
+  useEffect(() => {
+    const c = params.get("company");
+    if (c) setCo(c);
+  }, [params]);
   const nMon = months.length || 1;
 
   const companies = COMPANY_ORDER.filter((c) => tx.some((r) => r.company === c));
@@ -72,8 +79,22 @@ export default function CompaniesPage() {
         partial={partial}
         nMon={nMon}
         firstCol={co === "__all__" ? "חברה / ספק" : "ספק / כרטיס"}
-        groupLabel={(g) => <strong>{g.key}</strong>}
-        subLabel={(s) => (s.extra?.holder ? `${s.key} · ${s.extra.holder}` : s.key)}
+        groupLabel={(g) =>
+          co === "__all__" ? (
+            <strong><EntityLink kind="company" value={g.key}>{g.key}</EntityLink></strong>
+          ) : (
+            <strong><EntityLink kind="merchant" value={g.key}>{g.key}</EntityLink></strong>
+          )
+        }
+        subLabel={(s) =>
+          co === "__all__" ? (
+            <EntityLink kind="merchant" value={s.key}>{s.key}</EntityLink>
+          ) : (
+            <EntityLink kind="card" value={s.key}>
+              {s.extra?.holder ? `${s.key} · ${s.extra.holder}` : s.key}
+            </EntityLink>
+          )
+        }
       />
     </>
   );

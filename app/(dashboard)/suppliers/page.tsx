@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTx } from "@/components/TransactionsProvider";
+import EntityLink from "@/components/EntityLink";
 import { useBasket } from "@/lib/store";
 import { COMPANY_ORDER } from "@/lib/types";
 import CompanyTabs from "@/components/CompanyTabs";
@@ -15,7 +17,8 @@ import { exportRows } from "@/lib/xlsx";
 export default function SuppliersPage() {
   const { tx, months, partial } = useTx();
   const { view, inBasket, offSup, init, toggleSup, setSups } = useBasket();
-  const [q, setQ] = useState("");
+  const params = useSearchParams();
+  const [q, setQ] = useState(() => params.get("merchant") || "");
 
   const meta = useMemo<CardMeta[]>(() => {
     const m = new Map<string, CardMeta>();
@@ -102,10 +105,13 @@ export default function SuppliersPage() {
         nMon={nMon}
         firstCol="ספק"
         exclude={{ off: offSup, onToggle: toggleSup }}
-        groupLabel={(g) => <>{g.key}</>}
+        groupLabel={(g) => <EntityLink kind="merchant" value={g.key}>{g.key}</EntityLink>}
         subLabel={(s) => (
           <>
-            ↳ כרטיס {s.key} <span className="muted">({s.extra.holder} · {s.extra.company})</span>
+            ↳ <EntityLink kind="card" value={s.key}>כרטיס {s.key}</EntityLink>{" "}
+            <span className="muted">(
+              {s.extra.holder} · <EntityLink kind="company" value={s.extra.company}>{s.extra.company}</EntityLink>
+            )</span>
           </>
         )}
       />

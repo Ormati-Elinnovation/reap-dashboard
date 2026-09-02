@@ -4,6 +4,7 @@ import { applyFilters, emptyFilters, optionsFor, type Column, type FilterState }
 import { fmt } from "@/lib/format";
 import { exportRows } from "@/lib/xlsx";
 import MultiSelect from "@/components/MultiSelect";
+import EntityLink from "@/components/EntityLink";
 
 type Row = Record<string, unknown> & { amt: number };
 
@@ -150,7 +151,17 @@ export default function DataTable<T extends Row>({
               <tr key={i}>
                 {cols.map((c) => (
                   <td key={c.k} style={c.k === "amt" ? { fontWeight: 600 } : undefined}>
-                    {c.k === "amt" ? fmt(r.amt) : String(r[c.k] ?? "")}
+                    {c.k === "amt"
+                      ? fmt(r.amt)
+                      : c.k === "card" && r["card"]
+                        ? <EntityLink kind="card" value={String(r["card"])}>{String(r["card"])}</EntityLink>
+                        : c.k === "company" && r["company"]
+                          ? <EntityLink kind="company" value={String(r["company"])}>{String(r["company"])}</EntityLink>
+                          : c.k === "merchant" && r["merchant"]
+                            ? <EntityLink kind="merchant" value={String(r["merchant"])}>{String(r["merchant"])}</EntityLink>
+                            : c.k === "holder" && r["holder"]
+                              ? <EntityLink kind="holder" value={String(r["holder"])}>{String(r["holder"])}</EntityLink>
+                              : String(r[c.k] ?? "")}
                   </td>
                 ))}
               </tr>
