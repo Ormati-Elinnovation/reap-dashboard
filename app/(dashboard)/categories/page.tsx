@@ -9,48 +9,14 @@ import { fmt } from "@/lib/format";
 import { exportRows } from "@/lib/xlsx";
 import { monthLabel } from "@/lib/months";
 import type { Transaction } from "@/lib/types";
-
-// Expense-type view: classify every transaction into a business category.
-// Priority: manual department → tech classification → Reap category mapping.
-const CAT_MAP: Record<string, string> = {
-  Software: "טכנולוגיה",
-  "Computer Services": "טכנולוגיה",
-  Advertising: "שיווק ופרסום",
-  Marketing: "שיווק ופרסום",
-  Travel: "נסיעות ותיירות",
-  Airlines: "נסיעות ותיירות",
-  Hotels: "נסיעות ותיירות",
-  Lodging: "נסיעות ותיירות",
-  Transportation: "נסיעות ותיירות",
-  Restaurants: "אוכל ואירוח",
-  Food: "אוכל ואירוח",
-  Groceries: "אוכל ואירוח",
-  Insurance: "מנהלה",
-  "Professional Services": "שירותים מקצועיים",
-  Legal: "שירותים מקצועיים",
-  Accounting: "שירותים מקצועיים",
-  Education: "הדרכה ולמידה",
-  Telecom: "תקשורת",
-  Utilities: "מנהלה",
-  "Office Supplies": "מנהלה",
-  Retail: "רכש כללי",
-  Others: "אחר",
-};
-
-function classify(r: Transaction): string {
-  if (r.department) return r.department;
-  if (r.tech_group || r.srv_group) return "טכנולוגיה";
-  if (r.cat && CAT_MAP[r.cat]) return CAT_MAP[r.cat];
-  if (r.cat) return r.cat; // keep original Reap category when unmapped
-  return "לא מסווג";
-}
+import { classifyBiz } from "@/lib/bizcat";
 
 export default function CategoriesPage() {
   const { tx, months, partial } = useTx();
   const [sel, setSel] = useState<string>("__all__");
   const nMon = months.length || 1;
 
-  const withCat = useMemo(() => tx.map((r) => ({ ...r, _bizcat: classify(r) })), [tx]);
+  const withCat = useMemo(() => tx.map((r) => ({ ...r, _bizcat: classifyBiz(r) })), [tx]);
   const cats = useMemo(() => {
     const totals = new Map<string, number>();
     for (const r of withCat) totals.set(r._bizcat, (totals.get(r._bizcat) || 0) + r.amt);

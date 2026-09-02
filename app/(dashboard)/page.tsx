@@ -9,6 +9,7 @@ import { fmt } from "@/lib/format";
 import { monthLabel } from "@/lib/months";
 import type { Transaction } from "@/lib/types";
 import EntityLink from "@/components/EntityLink";
+import { classifyBiz } from "@/lib/bizcat";
 
 type Insight = { icon: string; text: string; tone?: "warn" | "good" | "info" };
 
@@ -187,6 +188,8 @@ export default function MainPage() {
   const tot = tx.reduce((s, r) => s + r.amt, 0);
   const mTot = useMemo(() => monthTotals(tx, months), [tx, months]);
   const groups = useMemo(() => buildPivot(tx, "company", "card", ["holder"]), [tx]);
+  const catTx = useMemo(() => tx.map((r) => ({ ...r, cat: classifyBiz(r) })), [tx]);
+  const catGroups = useMemo(() => buildPivot(catTx, "cat", "merchant", []), [catTx]);
   const insights = useMemo(() => buildInsights(tx, months, partial), [tx, months, partial]);
 
   const last = months[months.length - 1];
@@ -220,6 +223,15 @@ export default function MainPage() {
   }, [lastRows]);
   const coMax = Math.max(1, ...coTotals.map(([, v]) => v));
   const supMax = Math.max(1, ...supTotals.map(([, v]) => v));
+  const catTotals = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of lastRows) {
+      const k = classifyBiz(r);
+      m.set(k, (m.get(k) || 0) + r.amt);
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [lastRows]);
+  const catMax = Math.max(1, ...catTotals.map(([, v]) => v));
   const cardMax = Math.max(1, ...cardTotals.map(([, v]) => v.amt));
 
   return (
@@ -280,6 +292,30 @@ export default function MainPage() {
 
       <MonthlyChart months={months} totals={mTot} partial={partial} />
 
+      <div className="card" style={{ margin: "12px 0" }}>
+        <div className="lbl" style={{ marginBottom: 10 }}>
+          🗂️ פילוח לפי סוג הוצאה — {last ? monthLabel(last) : ""}
+        </div>
+        {lastTot > 0 && (
+          <div dir="ltr" style={{ display: "flex", height: 18, borderRadius: 8, overflow: "hidden", marginBottom: 14, background: "var(--panel2)" }}>
+            {catTotals.map(([c, v], i) => (
+              <div
+                key={c}
+                title={`${c}: $${fmt(v)}`}
+                style={{
+                  width: `${(v / lastTot) * 100}%`,
+                  background: ["#ff9900", "#58a6ff", "#3fb950", "#d2a8ff", "#f85149", "#79c0ff", "#e3b341", "#8b98a9"][i % 8],
+                  minWidth: v / lastTot > 0.01 ? 4 : 0,
+                }}
+              />
+            ))}
+          </div>
+        )}
+        {catTotals.map(([c, v]) => (
+          <HBar key={c} label={`${c} · ${((v / Math.max(1, lastTot)) * 100).toFixed(0)}%`} value={v} max={catMax} />
+        ))}
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 12, margin: "12px 0" }}>
         <div className="card">
           <div className="lbl" style={{ marginBottom: 10 }}>
@@ -316,6 +352,17 @@ export default function MainPage() {
           ))}
         </div>
       </div>
+
+      <h3>לפי סוג הוצאה</h3>
+      <PivotTable
+        groups={catGroups}
+        months={months}
+        partial={partial}
+        nMon={nMon}
+        firstCol="סוג הוצאה / ספק"
+        groupLabel={(g) => <strong>{g.key}</strong>}
+        subLabel={(s) => <EntityLink kind="merchant" value={s.key}>{s.key}</EntityLink>}
+      />
 
       <h3>לפי חברה וכרטיס</h3>
       <PivotTable
