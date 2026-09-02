@@ -24,7 +24,7 @@ export default function EntityLink({
   return (
     <Link
       href={entityHref(kind, value)}
-      style={{ color: "var(--accent)", textDecoration: "underline", textUnderlineOffset: 2 }}
+      style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
       title="פתח פירוט"
     >
       {children}
