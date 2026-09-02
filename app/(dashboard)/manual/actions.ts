@@ -33,7 +33,7 @@ function techFor(
 ): { supplier: string; group: string } | null {
   const t = classifyTech(merchant, techMap);
   if (t) return t;
-  if (department === "טכנולוגיה") return { supplier: merchant, group: "ידני" };
+  if (department === "טכנולוגיה") return { supplier: merchant, group: "Cloud/Hosting" };
   return null;
 }
 
@@ -70,9 +70,9 @@ export async function addManual(input: ManualInput): Promise<{ ok?: boolean; err
     ts: date,
     tid: "manual",
     company,
-    card: "חיצוני",
-    holder: "ידני",
-    merchant: merchant.trim(),
+    card: "Alee AWS",
+    holder: "Alee AWS",
+    merchant: merchant.trim() === "חיצוני" || merchant.trim() === "ידני" ? "Alee AWS" : merchant.trim(),
     cat: cat || null,
     amt: Math.round(amt * 100) / 100,
     status: "CLEARED",

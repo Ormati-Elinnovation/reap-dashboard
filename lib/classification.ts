@@ -3,7 +3,7 @@ import type { TechMap } from "./types";
 // ---- Servers grouping (ported from build_tabs.py _srvgrp) ----
 export function classifyServer(merchant: string): "AWS" | "AUTOMAT" | "MongoDB" | null {
   const u = merchant.toUpperCase();
-  if (u.includes("AWS EMEA")) return "AWS";
+  if (u.includes("AWS EMEA") || u.includes("ALEE AWS") || u.includes("ALEE")) return "AWS";
   if (u.includes("AUTOMAT")) return "AUTOMAT";
   if (u.includes("MONGO")) return "MongoDB";
   return null;
@@ -12,7 +12,7 @@ export function classifyServer(merchant: string): "AWS" | "AUTOMAT" | "MongoDB" 
 // ---- Technology classification (ported verbatim from build_infra.py) ----
 // Group order is load-bearing (first match wins).
 export const TECH_KW: Record<string, string[]> = {
-  "Cloud/Hosting": ["AWS EMEA", "GOOGLE CLOUD", "DIGITALOCEAN", "HETZNER", "LINODE", "RENDER", "FLY.IO", "RAILWAY", "AZURE", "GCP"],
+  "Cloud/Hosting": ["AWS EMEA", "ALEE AWS", "GOOGLE CLOUD", "DIGITALOCEAN", "HETZNER", "LINODE", "RENDER", "FLY.IO", "RAILWAY", "AZURE", "GCP"],
   "Database": ["MONGO", "SUPABASE", "PLANETSCALE", "REDIS", "FIREBASE", "NEON"],
   "AI/API infra": ["OPENROUTER", "OPENAI", "ANTHROPIC", "KLING", "ELEVENLABS", "REPLICATE", "HUGGING", "PERPLEXITY", "MISTRAL", "COHERE", "GROQ", "FAL.AI", "RUNPOD", "TOGETHER", "DEEPGRAM", "PINECONE"],
   "Domains/DNS/CDN": ["GODADDY", "CLOUDFLARE", "NAMECHEAP", "VERCEL", "NETLIFY", "FASTLY", "PORKBUN"],
@@ -23,7 +23,7 @@ export const TECH_KW: Record<string, string[]> = {
 
 // Supplier normalizer — first substring match wins (order matters).
 const SUP: [string, string][] = [
-  ["GOOGLE WORKSPACE", "Google Workspace"], ["GOOGLE CLOUD", "Google Cloud"], ["AWS EMEA", "AWS"],
+  ["GOOGLE WORKSPACE", "Google Workspace"], ["GOOGLE CLOUD", "Google Cloud"], ["ALEE AWS", "Alee AWS"], ["AWS EMEA", "AWS"],
   ["SLACK", "Slack"], ["CURSOR", "Cursor"], ["FIGMA", "Figma"], ["ATLASSIAN", "Atlassian"], ["GODADDY", "GoDaddy"],
   ["KLING", "Kling AI"], ["SENDGRID", "Twilio SendGrid"], ["TWILIO", "Twilio"], ["NOTION", "Notion"],
   ["ALCHEMY", "Alchemy"], ["ZOOM", "Zoom"], ["OPENROUTER", "OpenRouter"], ["OPENAI", "OpenAI"], ["ANTHROPIC", "Anthropic"],

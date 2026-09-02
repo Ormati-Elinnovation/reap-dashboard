@@ -91,7 +91,7 @@ export default function ManualClient() {
     <>
       <h3>🖊️ הוצאות ידניות <span className="muted">— הוצאות שלא היו בכרטיסי Reap</span></h3>
       <p className="sub">
-        כל שורה נשמרת בטבלת ההוצאות הראשית ומופיעה אוטומטית בכל הטאבים (כל ההוצאות, כרטיסים, ספקים וכו&apos;). כרטיס = &quot;חיצוני&quot;.
+        כל שורה נשמרת בטבלת ההוצאות הראשית ומופיעה אוטומטית בכל הטאבים (כל ההוצאות, כרטיסים, ספקים, טכנולוגיה ושרתים&apos;). כרטיס = &quot;חיצוני&quot;.
       </p>
 
       {/* entry form */}
@@ -122,7 +122,7 @@ export default function ManualClient() {
                   ))}
                 </select>
               </td>
-              <td className="muted">חיצוני</td>
+              <td className="muted">Alee AWS</td>
               <td>
                 <input
                   list="manual-merchants"

@@ -2,6 +2,8 @@
 export const CARD_ALIASES: Record<string, string> = {
   "6243": "Joni",
   "8414": "Admin Jenny",
+  חיצוני: "Alee AWS",
+  ידני: "Alee AWS",
 };
 
 export function cardLast4(card: string): string {
