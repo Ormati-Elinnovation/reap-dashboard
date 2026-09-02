@@ -27,7 +27,12 @@ export const CAT_MAP: Record<string, string> = {
   Others: "אחר",
 };
 
+function isRonitTours(merchant: string): boolean {
+  return (merchant || "").replace(/\s+/g, " ").toUpperCase().includes("RONIT TOURS");
+}
+
 export function classifyBiz(r: Transaction): string {
+  if (isRonitTours(r.merchant)) return "נסיעות ותיירות";
   if (r.department) return r.department;
   if (r.tech_group || r.srv_group) return "טכנולוגיה";
   if (r.cat && CAT_MAP[r.cat]) return CAT_MAP[r.cat];
