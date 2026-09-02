@@ -262,37 +262,31 @@ export default function MainPage() {
         ]}
       />
 
-      <SpendOrbit total={lastTot} month={last ? monthLabel(last) : ""} items={orbitItems} />
-
-      {insights.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12, margin: "12px 0" }}>
-          {([
-            { tone: "good" as const, title: "🟢 חיובי", bg: "rgba(63,185,80,0.12)", border: "rgba(63,185,80,0.35)" },
-            { tone: "warn" as const, title: "🔴 שלילי", bg: "rgba(248,81,73,0.10)", border: "rgba(248,81,73,0.35)" },
-            { tone: "info" as const, title: "⚪ ניטרלי", bg: "var(--panel2)", border: "var(--line)" },
-          ] as const).map((g) => {
-            const items = insights.filter((i) => (i.tone || "info") === g.tone);
-            if (!items.length) return null;
-            return (
-              <div key={g.tone} className="card" style={{ background: g.bg, border: `1px solid ${g.border}` }}>
-                <div className="lbl" style={{ marginBottom: 10 }}>{g.title}</div>
-                {items.map((ins, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex", gap: 10, padding: "7px 0", fontSize: 13.5,
-                      borderTop: i ? "1px solid var(--line)" : undefined,
-                    }}
-                  >
-                    <span>{ins.icon}</span>
-                    <span>{ins.text}</span>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(240px,0.9fr) minmax(320px,1.4fr)", gap: 12, margin: "12px 0", alignItems: "stretch" }}>
+        {insights.some((i) => i.tone === "good" || i.tone === "warn") && (
+          <div className="card" style={{ padding: 0, overflow: "hidden", display: "grid", gridTemplateRows: "1fr 1fr" }}>
+            <div style={{ padding: 14, background: "rgba(63,185,80,0.12)" }}>
+              <div className="lbl" style={{ marginBottom: 8 }}>חיובי</div>
+              {insights.filter((i) => i.tone === "good").slice(0, 3).map((ins, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, padding: "5px 0", fontSize: 12.5, borderTop: i ? "1px solid var(--line)" : undefined }}>
+                  <span>{ins.icon}</span><span>{ins.text}</span>
+                </div>
+              ))}
+              {insights.filter((i) => i.tone === "good").length === 0 && <div className="muted">אין חריגות חיוביות</div>}
+            </div>
+            <div style={{ padding: 14, background: "rgba(248,81,73,0.10)", borderTop: "1px solid var(--line)" }}>
+              <div className="lbl" style={{ marginBottom: 8 }}>שלילי</div>
+              {insights.filter((i) => i.tone === "warn").slice(0, 3).map((ins, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, padding: "5px 0", fontSize: 12.5, borderTop: i ? "1px solid var(--line)" : undefined }}>
+                  <span>{ins.icon}</span><span>{ins.text}</span>
+                </div>
+              ))}
+              {insights.filter((i) => i.tone === "warn").length === 0 && <div className="muted">אין חריגות שליליות</div>}
+            </div>
+          </div>
+        )}
+        <SpendOrbit total={lastTot} month={last ? monthLabel(last) : ""} items={orbitItems} />
+      </div>
 
       <MonthlyChart months={months} totals={mTot} partial={partial} />
 
