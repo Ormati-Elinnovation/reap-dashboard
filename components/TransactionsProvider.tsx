@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { TechMap, Transaction } from "@/lib/types";
 import { deriveMonths, partialMonth } from "@/lib/months";
 import { cachedData, loadData, onReload, type Loaded } from "@/lib/dataStore";
+import { cardHolder } from "@/lib/cardAliases";
 
 type Ctx = {
   tx: Transaction[];
@@ -42,7 +43,13 @@ export function TransactionsProvider({ isAdmin, children }: { isAdmin: boolean; 
   const value = useMemo<Ctx | null>(
     () =>
       data
-        ? { tx: data.tx, techMap: data.techMap, months: deriveMonths(data.tx), partial: partialMonth(data.tx), isAdmin }
+        ? {
+            tx: data.tx.map((r) => ({ ...r, holder: cardHolder(r.card, r.holder) || r.holder })),
+            techMap: data.techMap,
+            months: deriveMonths(data.tx),
+            partial: partialMonth(data.tx),
+            isAdmin,
+          }
         : null,
     [data, isAdmin]
   );

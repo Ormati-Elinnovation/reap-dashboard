@@ -247,21 +247,32 @@ export default function MainPage() {
       />
 
       {insights.length > 0 && (
-        <div className="card" style={{ margin: "12px 0" }}>
-          <div className="lbl" style={{ marginBottom: 10 }}>💡 תובנות</div>
-          {insights.map((ins, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex", gap: 10, padding: "7px 0", fontSize: 13.5,
-                borderTop: i ? "1px solid var(--line)" : undefined,
-                color: ins.tone === "warn" ? "var(--exp)" : ins.tone === "good" ? "#3fb950" : "var(--txt)",
-              }}
-            >
-              <span>{ins.icon}</span>
-              <span style={{ color: "var(--txt)" }}>{ins.text}</span>
-            </div>
-          ))}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12, margin: "12px 0" }}>
+          {([
+            { tone: "good" as const, title: "🟢 חיובי", bg: "rgba(63,185,80,0.12)", border: "rgba(63,185,80,0.35)" },
+            { tone: "warn" as const, title: "🔴 שלילי", bg: "rgba(248,81,73,0.10)", border: "rgba(248,81,73,0.35)" },
+            { tone: "info" as const, title: "⚪ ניטרלי", bg: "var(--panel2)", border: "var(--line)" },
+          ] as const).map((g) => {
+            const items = insights.filter((i) => (i.tone || "info") === g.tone);
+            if (!items.length) return null;
+            return (
+              <div key={g.tone} className="card" style={{ background: g.bg, border: `1px solid ${g.border}` }}>
+                <div className="lbl" style={{ marginBottom: 10 }}>{g.title}</div>
+                {items.map((ins, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex", gap: 10, padding: "7px 0", fontSize: 13.5,
+                      borderTop: i ? "1px solid var(--line)" : undefined,
+                    }}
+                  >
+                    <span>{ins.icon}</span>
+                    <span>{ins.text}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}
 
