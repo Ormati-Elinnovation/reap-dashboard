@@ -10,6 +10,7 @@ import { monthLabel } from "@/lib/months";
 import type { Transaction } from "@/lib/types";
 import EntityLink from "@/components/EntityLink";
 import { classifyBiz } from "@/lib/bizcat";
+import SpendOrbit from "@/components/SpendOrbit";
 
 type Insight = { icon: string; text: string; tone?: "warn" | "good" | "info" };
 
@@ -249,6 +250,21 @@ export default function MainPage() {
               : undefined,
           },
         ]}
+      />
+
+      <SpendOrbit
+        total={lastTot}
+        month={last ? monthLabel(last) : ""}
+        items={[...sumBy(lastRows, "company").entries()].length ? (() => {
+          const m = new Map<string, number>();
+          for (const r of lastRows) {
+            const k = classifyBiz(r);
+            m.set(k, (m.get(k) || 0) + r.amt);
+          }
+          return [...m.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .map(([label, amt]) => ({ label, amt, href: "/categories" }));
+        })() : []}
       />
 
       {insights.length > 0 && (

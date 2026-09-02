@@ -76,3 +76,14 @@ tr.srow{cursor:pointer}tr.srow.off td{color:var(--muted);text-decoration:line-th
 .sidenav-actions button,.sidenav-actions a{display:block;width:100%;text-align:right;background:none;border:none;color:var(--txt);padding:9px 12px;border-radius:9px;font-size:14px;font-family:inherit;cursor:pointer;margin-bottom:2px;text-decoration:none}
 .sidenav-actions button:hover,.sidenav-actions a:hover{background:var(--panel2)}
 .hdr{margin-bottom:14px}
+.orbit-wrap{margin:12px 0;overflow:hidden}
+.orbit-stage{position:relative;height:280px}
+.orbit-core{position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);width:132px;height:132px;border-radius:50%;background:var(--panel2);border:2px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;box-shadow:0 0 0 10px rgba(255,153,0,.08)}
+.orbit-core-lbl{font-size:11px;font-weight:700;color:var(--muted)}
+.orbit-core-val{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.orbit-core-sub{font-size:10px;color:var(--muted)}
+.orbit-ball{position:absolute;left:50%;top:50%;border-radius:50%;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;font-weight:700;line-height:1.15;text-align:center;padding:6px;animation:orbit-float 7s ease-in-out infinite;transform:translate(-50%,-50%) rotate(calc(var(--i) * 51deg)) translateY(-108px) rotate(calc(var(--i) * -51deg))}
+.orbit-ball:hover{z-index:3;filter:brightness(1.08)}
+.orbit-name{font-size:10px;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.orbit-pct{font-size:12px}
+@keyframes orbit-float{0%,100%{margin-top:0}50%{margin-top:-8px}}
