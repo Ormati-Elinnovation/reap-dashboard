@@ -1,52 +1,8 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Next.js 16: "Middleware" is now "Proxy". Optimistic auth check + session refresh.
-export async function proxy(request: NextRequest) {
-  // Public REST API (/api/v1): authenticated by API key inside the route handlers,
-  // never by the dashboard session — must not be redirected to /login.
-  const p = request.nextUrl.pathname;
-  if (p.startsWith("/api/") || p === "/api-docs") return NextResponse.next();
-
-  let response = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  const isAuthRoute = path === "/login" || path.startsWith("/auth");
-
-  if (!user && !isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-  if (user && isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
-  }
-  return response;
+// Dashboard is open (no login). Keep this file so Next still has a proxy hook.
+export function proxy(_request: NextRequest) {
+  return NextResponse.next();
 }
 
 export const config = {

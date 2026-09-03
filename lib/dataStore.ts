@@ -1,5 +1,3 @@
-import { createClient } from "./supabase/client";
-import { fetchAllTransactions, fetchTechMap } from "./data";
 import type { TechMap, Transaction } from "./types";
 
 export type Loaded = { tx: Transaction[]; techMap: TechMap };
@@ -15,10 +13,11 @@ export function cachedData(): Loaded | null {
 export async function loadData(): Promise<Loaded> {
   if (cache) return cache;
   if (!inflight) {
-    const sb = createClient();
-    inflight = Promise.all([fetchAllTransactions(sb), fetchTechMap(sb)])
-      .then(([tx, techMap]) => {
-        cache = { tx, techMap };
+    inflight = fetch("/api/internal/data", { cache: "no-store" })
+      .then(async (r) => {
+        if (!r.ok) throw new Error("failed to load data");
+        const body = (await r.json()) as Loaded;
+        cache = { tx: body.tx, techMap: body.techMap };
         inflight = null;
         return cache;
       })
