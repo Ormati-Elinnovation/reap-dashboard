@@ -1,0 +1,5 @@
+"Date (UTC)","Date Cleared (UTC)","Status","Cardholder Name","Merchant","Category","Currency","Amount","Exchange rate","Charged amount","Charged currency","Card name","Last 4","Receipt name","Group","Notes","Card Transaction ID"
+"2026-09-02 06:09:59","2026-09-02 13:08:22","Cleared","omri hanover","Autopay SA","Payroll","PLN","50.0000","0.2742","13.71","USD","Omri Hanover","1079","","Management","","tid_JoP0rhGHs0"
+"2026-09-08 14:31:42","2026-09-09 12:42:33","Cleared","omri hanover","RAILWAY","Software & SaaS","USD","27.0900","","27.09","USD","Omri Hanover","1079","","Management","","tid_dn4FZlH1Xa"
+"2026-09-09 11:28:47","2026-09-10 12:39:26","Cleared","omri hanover","FIREFLIES.AI","Software & SaaS","USD","120.0000","","120.00","USD","Omri Hanover","1079","","Management","","tid_cugZtLnN62"
+"2026-09-13 10:10:03","2026-09-14 12:54:46","Cleared","omri hanover","SLACK T07K1M70X7C","Software & SaaS","USD","90.6200","","90.62","USD","Omri Hanover","1079","","Management","","tid_MJMDiddUBN"
